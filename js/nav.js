@@ -41,6 +41,16 @@
     });
   }
 
+  var contactToggle = document.querySelector(".contact__toggle");
+  var contactReveal = document.getElementById("contact-links");
+
+  if (contactToggle && contactReveal) {
+    contactToggle.addEventListener("click", function () {
+      var isOpen = contactReveal.classList.toggle("is-open");
+      contactToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
+
   var revealTargets = document.querySelectorAll("[data-reveal]");
 
   if ("IntersectionObserver" in window && revealTargets.length) {

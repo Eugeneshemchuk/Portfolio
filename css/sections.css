@@ -276,6 +276,31 @@
   margin-bottom: var(--space-6);
 }
 
+.contact__toggle {
+  display: none;
+}
+
+html.js .contact__toggle {
+  display: inline-flex;
+  margin-bottom: var(--space-6);
+  font-family: var(--font-mono);
+}
+
+html.js .contact__reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-slow) var(--ease-standard);
+}
+
+html.js .contact__reveal > .contact__links {
+  overflow: hidden;
+  min-height: 0;
+}
+
+html.js .contact__reveal.is-open {
+  grid-template-rows: 1fr;
+}
+
 .contact__links {
   display: grid;
   gap: var(--space-3);

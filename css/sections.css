@@ -1,0 +1,303 @@
+/* ==========================================================================
+   #hero
+   ========================================================================== */
+
+#hero {
+  padding-block-start: var(--space-8);
+}
+
+/* Full-bleed terminal window — the window chrome spans the viewport,
+   inner content stays centred/readable at content-max-width */
+.hero__terminal {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+.hero__terminal .terminal__bar {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.hero__terminal .terminal__body {
+  position: relative;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding: var(--space-7) var(--gutter);
+}
+
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero__terminal h1 {
+  margin-block: var(--space-4);
+}
+
+.hero__terminal p {
+  color: var(--color-text-muted);
+}
+
+.hero__location {
+  display: block;
+  font-size: var(--fs-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.hero__cta .button {
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   #expertise
+   ========================================================================== */
+
+#expertise > .container > p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-7);
+}
+
+.expertise__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
+.expertise__card {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.expertise__card .eyebrow {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.expertise__card h3 {
+  margin-bottom: var(--space-2);
+}
+
+.expertise__card p:last-child {
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   #work
+   ========================================================================== */
+
+.work__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: var(--space-5);
+}
+
+.work__card h3 {
+  margin-bottom: var(--space-4);
+}
+
+.work__fields > div {
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.work__fields > div:first-child {
+  border-top: none;
+}
+
+.work__fields dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.work__fields > div:nth-child(1) dt {
+  color: var(--color-syntax-amber);
+}
+
+.work__fields > div:nth-child(2) dt {
+  color: var(--color-accent);
+}
+
+.work__fields > div:nth-child(3) dt {
+  color: var(--color-syntax-green);
+}
+
+.work__fields dd {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   #other-work
+   ========================================================================== */
+
+#other-work > .container > p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-7);
+}
+
+.other-work__list {
+  padding: var(--space-2) var(--space-5) var(--space-5);
+}
+
+.other-work__list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.other-work__list li:first-child {
+  border-top: none;
+}
+
+.other-work__name {
+  font-family: var(--font-mono);
+  color: var(--color-syntax-pink);
+  min-width: 16ch;
+}
+
+.other-work__name a {
+  display: inline-block;
+  padding-block: var(--space-3);
+  color: inherit;
+}
+
+.other-work__desc {
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   #about
+   ========================================================================== */
+
+.about__content {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.about__photo {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.about__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about__stats {
+  margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.about__stats > div {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.about__stats dt {
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  min-width: 9ch;
+}
+
+.about__stats dd {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .about__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   #references
+   ========================================================================== */
+
+.testimonial {
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+  background: var(--color-surface);
+  border-left: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+}
+
+.testimonial p {
+  font-size: var(--fs-md);
+  max-width: none;
+}
+
+.testimonial footer {
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   #contact
+   ========================================================================== */
+
+#contact > .container > p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.contact__links {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.contact__links li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.contact__links li:first-child {
+  border-top: none;
+}
+
+.contact__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-accent);
+  min-width: 9ch;
+}
+
+.contact__links a {
+  display: inline-block;
+  padding-block: var(--space-3);
+  font-size: var(--fs-md);
+}

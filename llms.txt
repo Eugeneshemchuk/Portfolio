@@ -1,0 +1,37 @@
+# Eugene Shemchuk
+
+Eugene Shemchuk is a freelance senior backend/platform engineer based in Amsterdam, Netherlands, specialising in agentic AI systems, backend/platform engineering, and AI product development. 11 years of professional experience. Available for freelance and contract work.
+
+## What he does
+
+- Builds LLM-powered agents and conversational AI systems connected to real APIs, data, and business logic.
+- Backend/platform engineering: cloud migrations (AWS, Azure), API design and refactoring, platform reliability.
+- Takes AI products from discovery to shipped features, working across engineering, data science, and UX.
+- Applied ML across computer vision, NLP-based search, and conversational AI, from data prep to production.
+
+## Problems he solves
+
+- Turning AI prototypes and LLM demos into production-grade software.
+- Migrating and modernising backend platforms without breaking service continuity.
+- Building conversational/agentic systems that integrate with existing business processes.
+
+## Background
+
+- Lead Platform Engineer, ABN AMRO (2022–present) — cloud migration, LLM-powered components, platform/API work.
+- Technical Research Specialist, Netflix (2020–2022) — issue-discovery dashboards, cross-platform investigation, AI automation MVP.
+- Data Scientist / Software Engineer, SAI Amsterdam (2018–2020) — retail data platform, conversational AI, computer vision, NLP.
+- Earlier: freelance chatbot engineering and R&D/rapid prototyping.
+
+## Selected projects
+
+- Employee virtual assistant cloud migration (AWS to Azure), ABN AMRO.
+- Conversational AI system reported to save $1M+ annually, ~30% higher satisfaction (ZEO Alliance).
+- Retail data platform and computer-vision pipeline (up to 99.9% accuracy), SAI Amsterdam.
+
+## Contact
+
+- Email: shemchuk.eugene@gmail.com
+- LinkedIn: https://www.linkedin.com/in/eugene-shemchuk-2b9158165/
+- GitHub: https://github.com/Eugeneshemchuk
+- Book a call: https://calendly.com/shemchuk-eugene/30min
+- Site: https://eugeneshemchuk.github.io/Portfolio/

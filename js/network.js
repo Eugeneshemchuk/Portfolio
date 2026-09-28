@@ -329,16 +329,19 @@
       pointer.x = e.clientX - rect.left;
       pointer.y = e.clientY - rect.top;
       pointer.down = true;
+      parent.classList.add("is-playing");
     },
     { passive: true }
   );
   window.addEventListener("pointerup", function () {
     if (pointer.down) pointer.released = true;
     pointer.down = false;
+    parent.classList.remove("is-playing");
   });
   window.addEventListener("pointercancel", function () {
     pointer.down = false;
     pointer.charge = 0;
+    parent.classList.remove("is-playing");
   });
 
   function setFun(on) {

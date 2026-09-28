@@ -19,7 +19,18 @@
     nodeRadius: 1.6,
     colorNode: "94, 177, 255",       // --color-accent as rgb
     colorLine: "94, 177, 255",
-    colorCursorLine: "244, 245, 247" // --color-text, brighter than regular links
+    colorCursorLine: "244, 245, 247", // --color-text, brighter than regular links
+
+    // Fun mode: hover attracts, press-and-hold gathers nodes, release bursts them out.
+    funRadius: 300,       // px, reach of the pull and the burst
+    funAttract: 80,       // px/sec^2, gentle pull toward the hovering cursor
+    funHoldPull: 1400,    // px/sec^2, strong pull while the pointer is held down
+    funBurst: 700,        // px/sec, outward kick on release after a full charge
+    funChargeTime: 1,     // sec of holding for a full-strength burst
+    funRecovery: 1.2,     // per sec, how fast nodes settle back to drift speed
+    funTapTime: 0.2,      // sec, a press shorter than this adds a node instead of bursting
+    maxNodes: 120,        // hard cap; adding past it recycles the oldest node
+    colorRing: "126, 231, 135" // --color-syntax-green as rgb
   };
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -32,7 +43,10 @@
   var grid = {};
   var cellSize = CONFIG.linkDistance;
 
-  var pointer = { x: 0, y: 0, active: false };
+  var pointer = { x: 0, y: 0, active: false, down: false, released: false, charge: 0 };
+  var fun = false;
+  var rings = [];
+  var toggle = document.querySelector(".fun-toggle");
   var lastTime = 0;
   var rafId = null;
   var heroVisible = true;
@@ -51,17 +65,24 @@
     return Math.round(lerp(CONFIG.nodeCountMin, CONFIG.nodeCountMax, t));
   }
 
+  function makeNode(x, y) {
+    var angle = Math.random() * Math.PI * 2;
+    return {
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * CONFIG.driftSpeed,
+      vy: Math.sin(angle) * CONFIG.driftSpeed,
+      bvx: Math.cos(angle) * CONFIG.driftSpeed,
+      bvy: Math.sin(angle) * CONFIG.driftSpeed,
+      pop: 0
+    };
+  }
+
   function initNodes(w, h) {
     var count = nodeCountForArea(w * h);
     nodes = [];
     for (var i = 0; i < count; i++) {
-      var angle = Math.random() * Math.PI * 2;
-      nodes.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: Math.cos(angle) * CONFIG.driftSpeed,
-        vy: Math.sin(angle) * CONFIG.driftSpeed
-      });
+      nodes.push(makeNode(Math.random() * w, Math.random() * h));
     }
   }
 
@@ -99,7 +120,55 @@
     }
   }
 
+  function funForces(dt) {
+    if (pointer.down) pointer.charge = Math.min(pointer.charge + dt, CONFIG.funChargeTime);
+
+    var burst = 0;
+    if (pointer.released && pointer.charge < CONFIG.funTapTime) {
+      var added = makeNode(pointer.x, pointer.y);
+      added.pop = 1;
+      if (nodes.length >= CONFIG.maxNodes) nodes.shift();
+      nodes.push(added);
+      pointer.released = false;
+      pointer.charge = 0;
+    } else if (pointer.released) {
+      burst = CONFIG.funBurst * pointer.charge / CONFIG.funChargeTime;
+      rings.push({ x: pointer.x, y: pointer.y, r: 0, a: 1 });
+      pointer.released = false;
+      pointer.charge = 0;
+    }
+
+    var pull = pointer.down ? CONFIG.funHoldPull : pointer.active ? CONFIG.funAttract : 0;
+    var settle = Math.min(CONFIG.funRecovery * dt, 1);
+
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.pop > 0) n.pop = Math.max(n.pop - 2.5 * dt, 0);
+      n.vx += (n.bvx - n.vx) * settle;
+      n.vy += (n.bvy - n.vy) * settle;
+
+      if (!pull && !burst) continue;
+      var dx = pointer.x - n.x;
+      var dy = pointer.y - n.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 1 || dist > CONFIG.funRadius) continue;
+
+      var f = 1 - dist / CONFIG.funRadius;
+      var k = pull * f * dt - burst * f;
+      n.vx += (dx / dist) * k;
+      n.vy += (dy / dist) * k;
+    }
+
+    for (var r = rings.length - 1; r >= 0; r--) {
+      rings[r].r += 500 * dt;
+      rings[r].a -= 1.6 * dt;
+      if (rings[r].a <= 0) rings.splice(r, 1);
+    }
+  }
+
   function step(dt) {
+    if (fun) funForces(dt);
+
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
       n.x += n.vx * dt;
@@ -110,7 +179,7 @@
       if (n.y < 0) { n.y = 0; n.vy = -n.vy; }
       else if (n.y > height) { n.y = height; n.vy = -n.vy; }
 
-      if (pointer.active) {
+      if (pointer.active && !fun) {
         var dx = n.x - pointer.x;
         var dy = n.y - pointer.y;
         var dist = Math.sqrt(dx * dx + dy * dy);
@@ -128,6 +197,13 @@
     buildGrid();
 
     ctx.lineWidth = 1;
+
+    for (var r = 0; r < rings.length; r++) {
+      ctx.strokeStyle = "rgba(" + CONFIG.colorRing + ", " + rings[r].a * 0.6 + ")";
+      ctx.beginPath();
+      ctx.arc(rings[r].x, rings[r].y, rings[r].r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     for (var i = 0; i < nodes.length; i++) {
       var a = nodes[i];
@@ -176,7 +252,7 @@
 
       ctx.fillStyle = "rgba(" + CONFIG.colorNode + ", 0.9)";
       ctx.beginPath();
-      ctx.arc(a.x, a.y, CONFIG.nodeRadius, 0, Math.PI * 2);
+      ctx.arc(a.x, a.y, CONFIG.nodeRadius * (1 + 3 * a.pop), 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -244,6 +320,41 @@
     });
   }
 
+  // Press-and-hold works for every pointer type; on touch it only fires in fun mode.
+  parent.addEventListener(
+    "pointerdown",
+    function (e) {
+      if (!fun || e.button > 0 || e.target.closest("a, button")) return;
+      var rect = parent.getBoundingClientRect();
+      pointer.x = e.clientX - rect.left;
+      pointer.y = e.clientY - rect.top;
+      pointer.down = true;
+    },
+    { passive: true }
+  );
+  window.addEventListener("pointerup", function () {
+    if (pointer.down) pointer.released = true;
+    pointer.down = false;
+  });
+  window.addEventListener("pointercancel", function () {
+    pointer.down = false;
+    pointer.charge = 0;
+  });
+
+  function setFun(on) {
+    fun = on;
+    toggle.textContent = on ? "Turn off fun" : "Turn on fun";
+    rings = [];
+    pointer.down = pointer.released = false;
+    pointer.charge = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].vx = nodes[i].bvx;
+      nodes[i].vy = nodes[i].bvy;
+      nodes[i].pop = 0;
+    }
+    try { localStorage.setItem("fun", on ? "on" : "off"); } catch (e) {}
+  }
+
   resize();
 
   if (reduceMotion) {
@@ -260,6 +371,17 @@
       { threshold: 0 }
     );
     observer.observe(canvas.closest("#hero"));
+  }
+
+  if (toggle) {
+    try { fun = localStorage.getItem("fun") !== "off"; } catch (e) {}
+    setFun(fun);
+    toggle.hidden = false;
+    toggle.addEventListener("click", function () {
+      setFun(!fun);
+    });
+  } else {
+    fun = false;
   }
 
   updateRunState();

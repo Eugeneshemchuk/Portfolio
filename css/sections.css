@@ -58,10 +58,6 @@
   margin-top: var(--space-6);
 }
 
-.hero__cta .button {
-  font-family: var(--font-mono);
-}
-
 /* Shown by network.js only when the animation runs */
 .fun-toggle {
   position: relative;
@@ -130,6 +126,23 @@
 /* ==========================================================================
    #work
    ========================================================================== */
+
+.work__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.work__github {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
 
 .work__grid {
   display: grid;
@@ -313,7 +326,11 @@
 html.js .contact__toggle {
   display: inline-flex;
   margin-bottom: var(--space-6);
-  font-family: var(--font-mono);
+}
+
+/* Dissolved on open (nav.js); the links take its place */
+html.js .contact__toggle[hidden] {
+  display: none;
 }
 
 html.js .contact__reveal {

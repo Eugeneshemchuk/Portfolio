@@ -30,6 +30,7 @@
     funRecovery: 1.2,     // per sec, how fast nodes settle back to drift speed
     funTapTime: 0.2,      // sec, a press shorter than this adds a node instead of bursting
     maxNodes: 120,        // hard cap; adding past it recycles the oldest node
+    calmFadeIn: 900,      // ms, fresh calm network fading in after fun is switched off
     colorRing: "126, 231, 135" // --color-syntax-green as rgb
   };
 
@@ -47,6 +48,7 @@
   var fun = false;
   var rings = [];
   var toggle = document.querySelector(".fun-toggle");
+  var fadeInFrom = 0;
   var lastTime = 0;
   var rafId = null;
   var heroVisible = true;
@@ -194,6 +196,11 @@
 
   function draw() {
     ctx.clearRect(0, 0, width, height);
+    if (fadeInFrom) {
+      var fade = Math.min((performance.now() - fadeInFrom) / CONFIG.calmFadeIn, 1);
+      ctx.globalAlpha = fade;
+      if (fade === 1) fadeInFrom = 0;
+    }
     buildGrid();
 
     ctx.lineWidth = 1;
@@ -255,6 +262,7 @@
       ctx.arc(a.x, a.y, CONFIG.nodeRadius * (1 + 3 * a.pop), 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.globalAlpha = 1;
   }
 
   function frame(time) {
@@ -344,7 +352,14 @@
     parent.classList.remove("is-playing");
   });
 
-  function setFun(on) {
+  function setFun(on, byUser) {
+    // Switching fun off crumbles the current network; a fresh calm one fades in
+    if (byUser && !on && window.pixelDissolve) {
+      window.pixelDissolve.canvas(canvas);
+      initNodes(width, height);
+      fadeInFrom = performance.now();
+    }
+
     fun = on;
     toggle.textContent = on ? "Turn off fun" : "Turn on fun";
     rings = [];
@@ -381,7 +396,7 @@
     setFun(fun);
     toggle.hidden = false;
     toggle.addEventListener("click", function () {
-      setFun(!fun);
+      setFun(!fun, true);
     });
   } else {
     fun = false;

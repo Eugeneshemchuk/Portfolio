@@ -48,6 +48,40 @@
     contactToggle.addEventListener("click", function () {
       var isOpen = contactReveal.classList.toggle("is-open");
       contactToggle.setAttribute("aria-expanded", String(isOpen));
+
+      // Opening crumbles the button into pixels and the links take its place
+      if (isOpen && window.pixelDissolve) {
+        var hadFocus = document.activeElement === contactToggle;
+        window.pixelDissolve.element(contactToggle);
+        contactToggle.hidden = true;
+        if (hadFocus) contactReveal.querySelector("a").focus({ preventScroll: true });
+      }
+    });
+  }
+
+  // Clicking the email copies it; falls back to the mailto link if copying fails
+  var emailLink = document.querySelector('.contact__links a[href^="mailto:"]');
+
+  if (emailLink && navigator.clipboard) {
+    var status = document.createElement("span");
+    status.className = "visually-hidden";
+    status.setAttribute("role", "status");
+    emailLink.after(status);
+
+    emailLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      navigator.clipboard.writeText(emailLink.getAttribute("href").slice(7)).then(
+        function () {
+          status.textContent = "";
+          setTimeout(function () {
+            status.textContent = "Email address copied";
+          }, 50);
+          if (window.pixelDissolve) window.pixelDissolve.bubble(emailLink, "Copied to clipboard!");
+        },
+        function () {
+          window.location.href = emailLink.href;
+        }
+      );
     });
   }
 

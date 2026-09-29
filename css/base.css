@@ -95,6 +95,15 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 /* Skip link */
 .skip-link {
   position: absolute;
@@ -171,29 +180,31 @@ main section {
   gap: var(--space-5);
 }
 
+/* Each link lights up in its own editor syntax colour on hover/active, in menu order */
+.nav__menu li:nth-child(1) { --link-color: var(--color-accent); }
+.nav__menu li:nth-child(2) { --link-color: var(--color-syntax-green); }
+.nav__menu li:nth-child(3) { --link-color: var(--color-syntax-pink); }
+.nav__menu li:nth-child(4) { --link-color: var(--color-syntax-amber); }
+.nav__menu li:nth-child(5) { --link-color: var(--color-syntax-purple); }
+.nav__menu li:nth-child(6) { --link-color: var(--color-syntax-cyan); }
+.nav__menu li:nth-child(7) { --link-color: var(--color-syntax-orange); }
+
 .nav__menu a {
   display: inline-block;
   padding-block: var(--space-3);
-  text-decoration: none;
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
+  color: var(--color-text);
+  font-family: var(--font-code);
   font-size: var(--fs-sm);
-  transition: color var(--duration-fast) var(--ease-standard);
-}
-
-.nav__menu a::before {
-  content: "[";
-  opacity: 0.5;
-}
-
-.nav__menu a::after {
-  content: "]";
-  opacity: 0.5;
+  text-decoration: underline 2px transparent;
+  text-underline-offset: 6px;
+  transition: color var(--duration-fast) var(--ease-standard),
+    text-decoration-color var(--duration-fast) var(--ease-standard);
 }
 
 .nav__menu a:hover,
 .nav__menu a.is-active {
-  color: var(--color-text);
+  color: var(--link-color);
+  text-decoration-color: currentColor;
 }
 
 @media (max-width: 640px) {
@@ -244,8 +255,12 @@ main section {
 }
 
 .button--primary {
-  background: var(--color-accent);
-  color: var(--color-bg);
+  background: var(--color-button);
+  color: var(--color-on-button);
+}
+
+.button--primary:hover {
+  background: var(--color-button-hover);
 }
 
 .button--secondary {
@@ -292,6 +307,34 @@ main section {
 
 .terminal__dot:nth-child(3) {
   background: var(--color-dot-green);
+}
+
+/* Easter egg (js/egg.js): clicked dots hop, a bubble pops up then dissolves */
+.terminal__dot.is-hopping {
+  animation: dot-hop var(--duration-egg) var(--ease-standard);
+}
+
+@keyframes dot-hop {
+  30% { transform: translateY(-9px) scale(1.15); }
+  55% { transform: translateY(0) scale(1.2, 0.8); }
+  75% { transform: translateY(-3px); }
+}
+
+/* Pixel-dissolve overlays (js/egg.js); bubbles sit above the sticky header */
+.pixel-overlay {
+  position: absolute;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.egg {
+  z-index: 60;
+  transform-origin: var(--egg-origin, 50% 100%);
+  animation: egg-pop var(--duration-egg) var(--ease-pop);
+}
+
+@keyframes egg-pop {
+  from { transform: translateY(8px) scale(0.4); opacity: 0; }
 }
 
 .terminal__title {

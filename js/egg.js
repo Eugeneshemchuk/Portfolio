@@ -3,7 +3,11 @@
   // into drifting pixels. Used by the terminal-dot easter egg, the fun toggle
   // (network.js), the "Let's talk" button and the copied-email bubble (nav.js).
   var CONFIG = {
-    dotMessage: "Did you really think I'm a real button?",
+    dotMessages: [
+      "Did you really think I'm a real button?",
+      "Yes, the other one was fake and this one is real.",
+      "Do you have a job for Eugene or what are you doing here?"
+    ],
     showFor: 1600,      // ms a speech bubble stays before dissolving
     dissolveFor: 1000,  // ms for a whole snapshot to crumble away
     pixel: 3,           // px, size of each particle
@@ -14,6 +18,7 @@
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var bubbleNow = null;
+  var dotMessageIndex = 0; // shared across all three dots, always advances 1 -> 2 -> 3 -> 1
 
   function token(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -185,7 +190,8 @@
       void dot.offsetWidth; // restart the hop on repeat clicks
       dot.classList.add("is-hopping");
     }
-    bubble(dot, CONFIG.dotMessage);
+    bubble(dot, CONFIG.dotMessages[dotMessageIndex]);
+    dotMessageIndex = (dotMessageIndex + 1) % CONFIG.dotMessages.length;
   });
 
   document.addEventListener("animationend", function (e) {

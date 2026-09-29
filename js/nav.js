@@ -41,6 +41,17 @@
     });
   }
 
+  var faqToggle = document.querySelector(".faq__toggle");
+  var faqReveal = document.getElementById("faq-list");
+
+  if (faqToggle && faqReveal) {
+    faqToggle.addEventListener("click", function () {
+      var isOpen = faqReveal.classList.toggle("is-open");
+      faqToggle.setAttribute("aria-expanded", String(isOpen));
+      faqToggle.textContent = isOpen ? "Hide FAQ" : "Show FAQ";
+    });
+  }
+
   var contactToggle = document.querySelector(".contact__toggle");
   var contactReveal = document.getElementById("contact-links");
 

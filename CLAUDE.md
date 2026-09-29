@@ -14,8 +14,8 @@ Deployed as static files to **GitHub Pages**. No server, no build step.
 2. **No build step.** What is in the repo is what gets served. No bundler, no transpiler, no `npm install`, no `package.json` unless I explicitly ask.
 3. **No runtime third-party dependencies.** No CDN scripts, no Google Fonts link, no analytics beyond what I approve. Everything self-hosted in the repo.
 4. **Performance budget, enforced:**
-   - Total JS shipped: under 15 KB minified-equivalent (hand-written, keep it tight)
-   - Total CSS: under 20 KB
+   - Total JS shipped: under 30 KB minified-equivalent (hand-written, keep it tight)
+   - Total CSS: under 40 KB
    - Largest Contentful Paint target: under 1.2s on a mid-range mobile over 4G
    - Zero layout shift: every image and media element has explicit `width` and `height`
    - No render-blocking resources other than one small CSS file
@@ -36,6 +36,14 @@ This is an **iterative build**. Token efficiency matters to me. Follow these rul
 - **Do not create README files, docs, changelogs, or summary files** unless I ask.
 - **Ask before installing anything or adding any dependency.** The answer is almost certainly no.
 - **If content is missing, ask me for it.** Never invent project descriptions, client names, metrics, testimonials, or job history. Placeholder text is fine only if clearly marked `TODO:` and you tell me what you need.
+
+### Session log
+
+Keep `.claude/session-log.md` (gitignored, local only, not part of the deployed site) as a running record of context across sessions:
+
+- At the end of a session, or right after a push, compact what happened into a short entry: date, what changed, decisions made, open items. Newest entry on top.
+- Keep entries tight - a few lines, not a transcript. The point is to avoid re-deriving context, not to archive everything.
+- At the start of a new session, read this file first (before re-reading source files) to pick up where we left off.
 
 ---
 

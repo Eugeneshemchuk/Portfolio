@@ -136,6 +136,10 @@
   margin-bottom: var(--space-6);
 }
 
+.work__header h2 {
+  margin-bottom: 0;
+}
+
 .work__github {
   display: inline-flex;
   align-items: center;
@@ -146,12 +150,62 @@
 
 .work__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
   gap: var(--space-5);
+}
+
+.work__body {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.work__visual {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
 }
 
 .work__card h3 {
   margin-bottom: var(--space-4);
+}
+
+.work__client {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.work__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.work__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3) var(--space-4);
+  margin: var(--space-7) auto 0;
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 768px) {
+  .work__body {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--space-6);
+    align-items: center;
+  }
+
+  .work__visual {
+    aspect-ratio: 4 / 3;
+  }
 }
 
 .work__fields > div {
@@ -194,13 +248,13 @@
   margin-bottom: var(--space-7);
 }
 
-.other-work__list {
+.other-work__terminal .other-work__list {
   padding: var(--space-2) var(--space-5) var(--space-5);
 }
 
 .other-work__list li {
   display: grid;
-  grid-template-columns: minmax(140px, 200px) 1fr;
+  grid-template-columns: minmax(180px, 280px) 1fr;
   column-gap: var(--space-4);
   align-items: center;
   padding-block: var(--space-3);
@@ -214,6 +268,17 @@
 .other-work__name {
   font-family: var(--font-mono);
   color: var(--color-syntax-pink);
+}
+
+.other-work__name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.other-work__thumb {
+  flex: none;
+  border-radius: var(--radius-sm);
 }
 
 .other-work__name a {
@@ -274,7 +339,7 @@
 .about__stats dt {
   font-family: var(--font-mono);
   color: var(--color-accent);
-  min-width: 9ch;
+  min-width: 13ch;
 }
 
 .about__stats dd {
@@ -326,7 +391,6 @@
 
 html.js .faq__toggle {
   display: inline-flex;
-  margin-top: var(--space-6);
   margin-bottom: var(--space-6);
 }
 

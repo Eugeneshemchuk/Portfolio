@@ -75,6 +75,7 @@ h1 {
 
 h2 {
   font-size: var(--fs-2xl);
+  margin-bottom: var(--space-5);
 }
 
 h3 {
@@ -208,7 +209,7 @@ main section {
   text-decoration-color: currentColor;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   html.js .nav__toggle {
     display: inline-flex;
   }
@@ -238,6 +239,10 @@ main section {
   text-align: center;
   color: var(--color-text-muted);
   font-size: var(--fs-sm);
+}
+
+.site-footer p {
+  margin-inline: auto;
 }
 
 /* Buttons */

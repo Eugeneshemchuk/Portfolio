@@ -6,6 +6,7 @@
   --color-text-muted: #9aa0ac;
   --color-accent: #5eb1ff;
   --color-border: #2a2e36;
+  --color-border-soft: #1c1f25; /* faint hairline, decorative only */
 
   /* Primary button — indigo-violet. White text 5.6:1; button vs bg 3.5:1, vs surface 3.2:1 */
   --color-button: #5b50e8;
@@ -33,6 +34,7 @@
   --font-code: Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace;
   --font-weight-regular: 400;
   --font-weight-bold: 700;
+  --tracking-caps: 0.08em;
 
   /* Type scale — fluid, clamp(min, preferred, max) */
   --fs-sm: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);

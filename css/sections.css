@@ -416,6 +416,7 @@
     display: grid;
     grid-template-columns: 10ch minmax(0, 1fr);
     column-gap: var(--space-4);
+    align-items: baseline;
   }
 
   .work__fields dd {

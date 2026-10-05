@@ -138,7 +138,9 @@
   }
 }
 
+/* Positioned so it paints above the canvas; network lines pass behind it */
 .hero__cta {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);

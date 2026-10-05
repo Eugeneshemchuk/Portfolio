@@ -3,7 +3,7 @@
    ========================================================================== */
 
 #hero {
-  padding-block-start: var(--space-8);
+  padding-block-start: 0;
 }
 
 /* Full-bleed terminal window — the window chrome spans the viewport,
@@ -12,12 +12,6 @@
   border-radius: 0;
   border-left: none;
   border-right: none;
-}
-
-.hero__terminal .terminal__bar {
-  max-width: var(--content-max-width);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
 }
 
 /* Body spans the viewport so the canvas is full-bleed;
@@ -42,20 +36,106 @@
   pointer-events: none;
 }
 
+/* Text fills the hero on small screens, so the network sits further back */
+@media (max-width: 767px) {
+  .hero__canvas {
+    opacity: var(--canvas-opacity-narrow);
+  }
+}
+
+/* h1 carries name + role for search; the display line below is the visual hook */
 .hero__terminal h1 {
-  margin-block: var(--space-4);
+  margin-block: var(--space-4) var(--space-2);
+  font-size: var(--fs-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
 }
 
 .hero__terminal p {
   color: var(--color-text-muted);
 }
 
-.hero__location {
-  display: block;
-  font-size: var(--fs-lg);
-  font-weight: var(--font-weight-regular);
-  color: var(--color-text-muted);
+.hero__display {
+  position: relative;
+  margin-bottom: var(--space-5);
+  font-size: var(--fs-display);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--tracking-display);
+  animation: glitch-jolt var(--duration-glitch) steps(1, end) var(--delay-glitch) both;
+}
+
+.hero__terminal .hero__display,
+.hero__terminal .hero__pitch {
+  color: var(--color-text);
+}
+
+.hero__pitch {
   margin-top: var(--space-2);
+  font-size: var(--fs-md);
+}
+
+.hero__stack {
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+/* One-shot glitch on load: two offset colour copies flicker through
+   horizontal slices, then disappear. The real text is never hidden. */
+.hero__display::before,
+.hero__display::after {
+  content: attr(data-text);
+  content: attr(data-text) / "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: var(--duration-glitch) steps(1, end) var(--delay-glitch) both;
+}
+
+.hero__display::before {
+  color: var(--color-accent);
+  animation-name: glitch-a;
+}
+
+.hero__display::after {
+  color: var(--color-syntax-cyan);
+  animation-name: glitch-b;
+}
+
+@keyframes glitch-a {
+  0%   { opacity: 1; clip-path: inset(8% 0 78% 0);  transform: translateX(-0.0575em); }
+  15%  { opacity: 1; clip-path: inset(58% 0 22% 0); transform: translateX(0.069em); }
+  30%  { opacity: 1; clip-path: inset(30% 0 52% 0); transform: translateX(-0.046em); }
+  45%  { opacity: 1; clip-path: inset(80% 0 4% 0);  transform: translateX(0.0575em); }
+  60%  { opacity: 1; clip-path: inset(44% 0 40% 0); transform: translateX(-0.0345em); }
+  75%  { opacity: 1; clip-path: inset(15% 0 70% 0); transform: translateX(0.023em); }
+  100% { opacity: 0; clip-path: inset(0 0 100% 0);  transform: none; }
+}
+
+@keyframes glitch-b {
+  0%   { opacity: 1; clip-path: inset(66% 0 14% 0); transform: translateX(0.0575em); }
+  15%  { opacity: 1; clip-path: inset(12% 0 72% 0); transform: translateX(-0.069em); }
+  30%  { opacity: 1; clip-path: inset(70% 0 10% 0); transform: translateX(0.046em); }
+  45%  { opacity: 1; clip-path: inset(22% 0 60% 0); transform: translateX(-0.0575em); }
+  60%  { opacity: 1; clip-path: inset(50% 0 30% 0); transform: translateX(0.0345em); }
+  75%  { opacity: 1; clip-path: inset(85% 0 2% 0);  transform: translateX(-0.023em); }
+  100% { opacity: 0; clip-path: inset(0 0 100% 0);  transform: none; }
+}
+
+@keyframes glitch-jolt {
+  0%   { transform: translateX(0.023em); }
+  30%  { transform: translateX(-0.023em) skewX(-4.6deg); }
+  60%  { transform: translateX(0.0115em); }
+  100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__display,
+  .hero__display::before,
+  .hero__display::after {
+    animation: none;
+  }
 }
 
 .hero__cta {
@@ -169,18 +249,20 @@
   }
 }
 
+/* Text column + icon column on the right, icon centred against the text */
 .expertise__card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
   padding: var(--space-5);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 
-.expertise__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-4);
+.expertise__card h3 {
+  margin-bottom: var(--space-2);
 }
 
 .expertise__icon {
@@ -189,15 +271,6 @@
   color: var(--color-accent);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-}
-
-.expertise__card .eyebrow {
-  color: var(--color-text-muted);
-  margin-bottom: 0;
-}
-
-.expertise__card h3 {
-  margin-bottom: var(--space-2);
 }
 
 .expertise__card p:last-child {
@@ -234,13 +307,12 @@
   gap: var(--space-6);
 }
 
-/* Minimal chrome: a soft surface glow that fades toward the edges,
-   with a faint hairline border for definition */
+/* Lifted card tone with a soft centre highlight and a faint hairline border */
 .work__card {
   display: grid;
   gap: var(--space-4);
   padding: var(--space-6) var(--space-5);
-  background: radial-gradient(closest-side, var(--color-surface) 45%, transparent);
+  background: radial-gradient(closest-side, var(--color-card-glow) 40%, var(--color-card));
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
 }
@@ -251,6 +323,7 @@
   height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
 }
 
@@ -335,11 +408,16 @@
   }
 }
 
+/* Label column + full-width text keeps comfortable line lengths */
 @media (min-width: 1024px) {
-  .work__fields {
+  .work__fields > div {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-5);
+    grid-template-columns: 10ch minmax(0, 1fr);
+    column-gap: var(--space-4);
+  }
+
+  .work__fields dd {
+    margin-top: 0;
   }
 }
 
@@ -362,8 +440,6 @@
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   font-weight: var(--font-weight-regular);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
   color: var(--color-text-muted);
 }
 
@@ -407,16 +483,15 @@
    #references
    ========================================================================== */
 
-.testimonial {
-  padding: var(--space-6);
-  margin-bottom: var(--space-5);
-  background: var(--color-surface);
-  border-left: 2px solid var(--color-accent);
-  border-radius: var(--radius-sm);
+.references__list {
+  display: grid;
+  gap: var(--space-7);
+  margin-bottom: var(--space-7);
 }
 
 .testimonial p {
-  font-size: var(--fs-md);
+  font-size: var(--fs-lg);
+  line-height: var(--line-height-snug);
   max-width: none;
 }
 

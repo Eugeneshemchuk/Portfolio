@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Pixel Voyager · Eugene Shemchuk</title>
-  <meta name="description" content="A tiny 8-bit space shooter in the browser. Blast asteroids, break planets with twin lasers, collect stardust and stay clear of black holes." />
+  <meta name="description" content="A tiny 8-bit space shooter in the browser. Crack asteroids for minerals and crystals, level up your weapons and ship, break planets and stay clear of black holes." />
   <link rel="canonical" href="https://eugeneshemchuk.github.io/Portfolio/game/" />
   <link rel="stylesheet" href="../css/tokens.css" />
   <style>
@@ -28,6 +28,11 @@
     .screen__title { color: var(--color-text); font-size: var(--fs-xl); letter-spacing: 0.15em; }
     .screen__msg { color: var(--color-text); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
     .screen__keys { color: var(--color-text-muted); }
+    .toast { top: calc(var(--edge-top) + 52px); left: 50%; transform: translateX(-50%); margin: 0; padding: var(--space-1) var(--space-3); color: var(--color-syntax-amber); white-space: nowrap; background: color-mix(in srgb, var(--color-bg) 80%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-sm); pointer-events: none; }
+    /* Touch fire button: ring fills as the power shot charges. */
+    .fire { right: var(--edge-right); bottom: calc(var(--edge-bottom) + var(--space-4)); width: 88px; height: 88px; padding: 0; color: var(--color-text); font: inherit; letter-spacing: 0.1em; border: 0; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-bg) 80%, transparent) 86%, transparent 88%), conic-gradient(var(--color-syntax-purple) calc(var(--charge, 0) * 360deg), var(--color-border) 0); touch-action: none; -webkit-touch-callout: none; }
+    .fire.is-full { color: var(--color-syntax-cyan); background: radial-gradient(closest-side, color-mix(in srgb, var(--color-bg) 80%, transparent) 86%, transparent 88%), var(--color-syntax-cyan); }
+    .fire:active { transform: scale(0.96); }
     .screen button { pointer-events: auto; min-height: 44px; padding: 0 var(--space-5); color: var(--color-on-button); font: inherit; letter-spacing: 0.1em; text-transform: uppercase; background: var(--color-button); border: 0; border-radius: var(--radius-md); cursor: pointer; }
     .screen button:hover { background: var(--color-button-hover); }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -40,12 +45,14 @@
   <canvas aria-hidden="true"></canvas>
   <a class="ui back" href="../">← Eugene Shemchuk</a>
   <button class="ui sound" type="button" aria-pressed="false" hidden>Sound off</button>
-  <p class="ui hud" aria-live="off" hidden>Score <b data-score>0</b> · Best <b data-best>0</b></p>
+  <p class="ui hud" aria-live="off" hidden>Score <b data-score>0</b> · Lv <b data-level>1</b> · Best <b data-best>0</b></p>
+  <p class="ui toast" data-toast aria-live="polite" hidden></p>
+  <button class="ui fire" type="button" aria-label="Fire, hold for a power shot" hidden>FIRE</button>
   <div class="screen" data-screen hidden>
     <p class="screen__title">PIXEL VOYAGER</p>
-    <p class="screen__msg" data-msg>Blast asteroids, break planets, collect stardust, and keep clear of black holes.</p>
+    <p class="screen__msg" data-msg>Crack asteroids for minerals and crystals, level up your ship, break planets, and keep clear of black holes.</p>
     <button type="button" data-start>Launch</button>
-    <p class="screen__keys" data-keys>Arrows / WASD or mouse to steer · Space or hold click to fire · P to pause</p>
+    <p class="screen__keys" data-keys>Arrows / WASD or mouse to steer · Space or click to fire, hold for a power shot · P to pause</p>
   </div>
   <p class="fallback screen">Pixel Voyager is a tiny space shooter. It needs JavaScript, which this browser isn't running.</p>
   <script src="game.js" defer></script>

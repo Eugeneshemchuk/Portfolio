@@ -340,8 +340,12 @@
 
   // Click retargets the dive: the clicked point keeps its place on screen this frame,
   // then glides to the centre while the zoom carries on.
+  var hintEl = document.querySelector(".hint");
+  if (reduceMotion) hintEl.hidden = true; // nothing moves, so clicks don't zoom
+
   canvas.addEventListener("pointerdown", function (e) {
     if (reduceMotion) return;
+    hintEl.hidden = true; // the hint has done its job once someone has clicked
     var s = 2.6 / (Math.exp(logZoom) * S.magnify);
     var cs = Math.cos(angle), sn = Math.sin(angle);
     var ux = (e.clientX - cssW / 2) / cssH;
@@ -443,13 +447,25 @@
     gl.uniform1f(U.uNStops, Math.min(list.length, 8));
   }
 
+  // Slider readouts in units a visitor can read: 2x, 75%, 0.9°/s.
+  function formatValue(el) {
+    var v = +el.value;
+    switch (el.dataset.unit) {
+      case "x": return +v.toFixed(2) + "×";
+      case "%": return Math.round(v * 100) + "%";
+      case "%max": return Math.round(v / +el.max * 100) + "%";
+      case "deg": return (v * 180 / Math.PI).toFixed(1) + "°/s";
+      default: return el.value;
+    }
+  }
+
   function readForm() {
     var prevRes = S.res;
     Object.keys(CONFIG.defaults).forEach(function (k) {
       var el = form.elements[k];
       S[k] = el.type === "checkbox" ? (el.checked ? 1 : 0) : +el.value;
       var out = el.parentNode.querySelector("output");
-      if (out) out.textContent = el.value;
+      if (out) out.textContent = formatValue(el);
     });
     setPalette();
     setSamples();

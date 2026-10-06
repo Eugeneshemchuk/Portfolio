@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fractal Drift · Eugene Shemchuk</title>
-  <meta name="description" content="A slow zoom into the Mandelbrot set, rendered live in the browser. Click to send a ripple through it." />
+  <meta name="description" content="A slow zoom into the Mandelbrot set, rendered live in the browser. Click anywhere to zoom into that spot, and play with colours, warp and speed." />
   <link rel="canonical" href="https://eugeneshemchuk.github.io/Portfolio/fractal/" />
   <link rel="stylesheet" href="../css/tokens.css" />
   <style>
@@ -18,10 +18,16 @@
     .readout { left: var(--space-4); bottom: var(--space-4); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
     .readout b { color: var(--color-text); font-weight: var(--font-weight-regular); }
     .hint { right: var(--space-4); bottom: var(--space-4); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
-    .controls { top: var(--space-4); right: var(--space-4); width: min(16rem, calc(100vw - 2 * var(--space-4))); color: var(--color-text); background: color-mix(in srgb, var(--color-bg) 80%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-shadow: none; }
-    .controls summary { display: flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); cursor: pointer; }
+    .controls { top: var(--space-4); right: var(--space-4); max-height: calc(100dvh - 2 * var(--space-4)); overflow-y: auto; overscroll-behavior: contain; color: var(--color-text); background: color-mix(in srgb, var(--color-bg) 92%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-shadow: none; }
+    .controls[open] { width: min(16rem, calc(100vw - 2 * var(--space-4))); }
+    .controls summary { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 var(--space-3); cursor: pointer; list-style: none; background: inherit; }
+    .controls summary::-webkit-details-marker { display: none; }
+    .controls summary::after { content: "+"; margin-left: var(--space-3); color: var(--color-text-muted); }
+    .controls[open] summary::after { content: "−"; }
+    .controls fieldset { display: grid; gap: var(--space-3); margin: 0; padding: var(--space-3) 0 0; border: 0; border-top: 1px solid var(--color-border); }
+    .controls legend { float: left; width: 100%; padding: 0; color: var(--color-text); }
     .controls summary:focus-visible, .controls input:focus-visible, .controls select:focus-visible, .controls button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-    .controls__body { display: grid; gap: var(--space-3); padding: 0 var(--space-3) var(--space-3); }
+    .controls__body { display: grid; gap: var(--space-4); padding: 0 var(--space-3) var(--space-3); }
     .controls label { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1); color: var(--color-text-muted); }
     .controls output { color: var(--color-text); }
     .controls input, .controls select { grid-column: 1 / -1; min-height: 32px; accent-color: var(--color-accent); font: inherit; }
@@ -31,6 +37,11 @@
     .controls .controls__check input { min-height: 0; width: 18px; height: 18px; }
     .controls button { min-height: 44px; font: inherit; cursor: pointer; }
     .controls button:hover { border-color: var(--color-accent); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    @media (max-width: 480px) {
+      .controls[open] { left: var(--space-4); width: auto; z-index: 2; background: var(--color-bg); }
+      .hint { right: auto; left: var(--space-4); bottom: calc(var(--space-4) + 2.25rem); }
+    }
     .fallback { position: fixed; inset: 0; display: grid; place-content: center; padding: var(--space-4); text-align: center; }
     .js .fallback { display: none; }
     .no-gl .fallback { display: grid; }
@@ -38,45 +49,55 @@
   <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
+  <h1 class="sr-only">Fractal Drift: a live zoom into the Mandelbrot set</h1>
   <canvas aria-hidden="true"></canvas>
   <a class="ui back" href="../">← Eugene Shemchuk</a>
   <p class="ui readout" aria-live="off"><b data-target>Mandelbrot set</b> <span data-zoom></span></p>
-  <p class="ui hint">Click anywhere</p>
+  <p class="ui hint">Click to zoom in there</p>
   <details class="ui controls" hidden>
     <summary>Controls</summary>
     <form class="controls__body">
       <label hidden>Style
         <select name="style"></select>
       </label>
-      <label>Resolution <output></output><input type="range" name="res" min="0.5" max="2" step="0.25" /></label>
-      <label>Anti-aliasing
-        <select name="aa">
-          <option value="1">Off</option>
-          <option value="2">2×</option>
-          <option value="4">4×</option>
-        </select>
-      </label>
-      <label>Magnify <output></output><input type="range" name="magnify" min="1" max="4" step="0.25" /></label>
-      <label>Smooth <output></output><input type="range" name="smooth" min="0" max="1" step="0.01" /></label>
-      <label>Zoom speed <output></output><input type="range" name="zoom" min="0.25" max="3" step="0.05" /></label>
-      <label>Colour mode
-        <select name="mode">
-          <option value="0">Site</option>
-          <option value="1">Rainbow</option>
-          <option value="2">Sunset</option>
-          <option value="3">Electric</option>
-          <option value="4">Mint</option>
-          <option value="5">Mono</option>
-          <option value="6">Style colours</option>
-        </select>
-      </label>
-      <label class="controls__check"><input type="checkbox" name="bright" /> Full brightness</label>
-      <label>Spin <output></output><input type="range" name="spin" min="-0.1" max="0.1" step="0.005" /></label>
-      <label>Colour cycle <output></output><input type="range" name="cycle" min="0" max="1" step="0.01" /></label>
-      <label>Colour density <output></output><input type="range" name="density" min="0.3" max="3" step="0.05" /></label>
-      <label>Warp <output></output><input type="range" name="warp" min="0" max="0.6" step="0.01" /></label>
-      <label>Warp speed <output></output><input type="range" name="warpSpeed" min="0" max="1" step="0.01" /></label>
-      <button type="reset">Reset</button>
+      <fieldset>
+        <legend>Colour</legend>
+        <label>Palette
+          <select name="mode">
+            <option value="6">Style colours</option>
+            <option value="0">Site</option>
+            <option value="1">Rainbow</option>
+            <option value="2">Sunset</option>
+            <option value="3">Electric</option>
+            <option value="4">Mint</option>
+            <option value="5">Mono</option>
+          </select>
+        </label>
+        <label class="controls__check"><input type="checkbox" name="bright" /> Full brightness</label>
+        <label>Smooth <output></output><input type="range" name="smooth" min="0" max="1" step="0.01" data-unit="%" /></label>
+        <label>Band density <output></output><input type="range" name="density" min="0.3" max="3" step="0.05" data-unit="x" /></label>
+        <label>Colour flow <output></output><input type="range" name="cycle" min="0" max="1" step="0.01" /></label>
+      </fieldset>
+      <fieldset>
+        <legend>Motion</legend>
+        <label>Magnify <output></output><input type="range" name="magnify" min="1" max="4" step="0.25" data-unit="x" /></label>
+        <label>Zoom speed <output></output><input type="range" name="zoom" min="0.25" max="3" step="0.05" data-unit="x" /></label>
+        <label>Spin <output></output><input type="range" name="spin" min="-0.1" max="0.1" step="0.005" data-unit="deg" /></label>
+        <label>Warp <output></output><input type="range" name="warp" min="0" max="0.6" step="0.01" data-unit="%max" /></label>
+        <label>Warp speed <output></output><input type="range" name="warpSpeed" min="0" max="1" step="0.01" data-unit="deg" /></label>
+      </fieldset>
+      <fieldset>
+        <legend>Quality</legend>
+        <label>Resolution <output></output><input type="range" name="res" min="0.5" max="2" step="0.25" data-unit="x" /></label>
+        <label>Anti-aliasing
+          <select name="aa">
+            <option value="1">Off</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+        </label>
+      </fieldset>
+      <button type="reset">Reset to style</button>
     </form>
   </details>
   <p class="fallback">A live Mandelbrot zoom. It needs JavaScript and WebGL, which this browser isn't providing.</p>

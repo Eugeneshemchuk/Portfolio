@@ -306,7 +306,10 @@
     }, 150);
   }
 
-  window.addEventListener("resize", onResize);
+  // Watch the hero itself, not just the window: its height also changes when the
+  // fun toggle is revealed below, and a stale size stretches the canvas.
+  if ("ResizeObserver" in window) new ResizeObserver(onResize).observe(parent);
+  else window.addEventListener("resize", onResize);
   document.addEventListener("visibilitychange", function () {
     tabVisible = !document.hidden;
     updateRunState();

@@ -6,12 +6,14 @@
 
   // Tune the feel here without reading the logic below.
   var CONFIG = {
-    zoomRate: 0.12,      // per sec, exponential zoom speed (1 -> maxZoom in ~97s)
+    diveTime: 180,       // sec per destination at Zoom speed 1x, then the next one starts
+    idleGrace: 30,       // sec: never switch destination sooner than this after a click or scroll
     maxZoom: 120000,     // deep zoom via perturbation; drops to 6000 without float textures
     fadeTime: 1.6,       // sec, fade out/in between targets
     minScale: 1,         // adaptive resolution never drops below this (x CSS px), or below Resolution if lower
     glide: 0.9,          // per sec, how fast a clicked point slides to the centre
     clickBoost: 2.5,     // extra zoom speed right after a click, decays over ~1s
+    wheelZoom: 0.002,    // zoom per scrolled pixel, on a log scale: scroll up zooms in, down zooms out
     warpFadeStart: 20,   // zoom where Warp starts easing off...
     warpFadeEnd: 2000,   // ...and where it is gone, so deep views show the true set
     // Each target sits on a boundary "river" that stays detailed at every depth.
@@ -47,6 +49,7 @@
   // to the orbit start whenever the offset would lose accuracy.
   var deep = !!gl.getExtension("OES_texture_float");
   if (!deep) CONFIG.maxZoom = 6000;
+  CONFIG.zoomRate = Math.log(CONFIG.maxZoom) / CONFIG.diveTime; // exponential zoom speed, per sec
   var derivs = !!gl.getExtension("OES_standard_derivatives");
 
   var vert = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
@@ -259,7 +262,7 @@
   function render() {
     var zoom = Math.exp(logZoom) * S.magnify;
     updateWarp();
-    var fade = Math.min(t / CONFIG.fadeTime, (logMax - logZoom) / (CONFIG.zoomRate * S.zoom * CONFIG.fadeTime), 1);
+    var fade = Math.min(t / CONFIG.fadeTime, (diveEnd() - t) / CONFIG.fadeTime, 1);
 
     gl.uniform2f(U.uRes, canvas.width, canvas.height);
     gl.uniform2f(U.uShift, sx, sy);
@@ -303,13 +306,32 @@
     angle += dt * S.spin;
     phase += dt * S.cycle;
     warpAngle += dt * S.warpSpeed;
+    // Scroll zooms around the point under the cursor, read once per frame.
+    if (wheelDy) {
+      retarget(wheelX, wheelY);
+      logZoom = Math.min(Math.max(logZoom - wheelDy * CONFIG.wheelZoom, 0), logMax);
+      wheelDy = 0;
+      holdOff();
+    }
     var g = Math.exp(-dt * CONFIG.glide);
     sx *= g;
     sy *= g;
-    if (logZoom >= logMax) startDive((targetIndex + 1) % CONFIG.targets.length);
+    // Depth stops at the precision limit; only time moves on to the next destination.
+    if (logZoom > logMax) logZoom = logMax;
+    if (t >= diveEnd()) startDive((targetIndex + 1) % CONFIG.targets.length);
 
     render();
     rafId = requestAnimationFrame(frame);
+  }
+
+  // A dive lasts diveTime at 1x, scaled by Zoom speed, so the auto-zoom reaches full depth right at the end.
+  function diveEnd() {
+    return CONFIG.diveTime / S.zoom;
+  }
+
+  // After a click or scroll, push the switch back so it can't happen mid-exploration.
+  function holdOff() {
+    t = Math.min(t, Math.max(diveEnd() - CONFIG.idleGrace, CONFIG.fadeTime));
   }
 
   function start() {
@@ -338,18 +360,17 @@
     else start();
   });
 
-  // Click retargets the dive: the clicked point keeps its place on screen this frame,
-  // then glides to the centre while the zoom carries on.
+  // Click (or scroll) retargets the dive: the point under the cursor keeps its place on screen
+  // this frame, then glides to the centre while the zoom carries on.
   var hintEl = document.querySelector(".hint");
   if (reduceMotion) hintEl.hidden = true; // nothing moves, so clicks don't zoom
+  var wheelDy = 0, wheelX = 0, wheelY = 0;
 
-  canvas.addEventListener("pointerdown", function (e) {
-    if (reduceMotion) return;
-    hintEl.hidden = true; // the hint has done its job once someone has clicked
+  function retarget(clientX, clientY) {
     var s = 2.6 / (Math.exp(logZoom) * S.magnify);
     var cs = Math.cos(angle), sn = Math.sin(angle);
-    var ux = (e.clientX - cssW / 2) / cssH;
-    var uy = (cssH / 2 - e.clientY) / cssH;
+    var ux = (clientX - cssW / 2) / cssH;
+    var uy = (cssH / 2 - clientY) / cssH;
     var dx = ux - sx, dy = uy - sy;
     focus = {
       name: "Your pick",
@@ -358,9 +379,26 @@
     };
     sx = ux;
     sy = uy;
-    boost = CONFIG.clickBoost;
     uploadOrbit();
+  }
+
+  canvas.addEventListener("pointerdown", function (e) {
+    if (reduceMotion) return;
+    hintEl.hidden = true; // the hint has done its job once someone has used it
+    retarget(e.clientX, e.clientY);
+    boost = CONFIG.clickBoost;
+    holdOff();
   }, { passive: true });
+
+  // Not passive: a trackpad pinch arrives as ctrl+wheel and would otherwise zoom the whole page.
+  canvas.addEventListener("wheel", function (e) {
+    if (e.ctrlKey) e.preventDefault();
+    if (reduceMotion) return;
+    hintEl.hidden = true;
+    wheelDy += e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? cssH : 1);
+    wheelX = e.clientX;
+    wheelY = e.clientY;
+  }, { passive: false });
 
   // On-page controls: every input writes straight into S; colour mode also pushes its palette.
   var form = document.querySelector(".controls__body");

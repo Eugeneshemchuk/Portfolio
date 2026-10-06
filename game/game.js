@@ -1,4 +1,4 @@
-/* Pixel Voyager: a tiny 8-bit space game. Canvas 2D at low resolution, scaled up with crisp pixels. */
+/* Pixel Voyager: a tiny 8-bit space shooter. Canvas 2D at low resolution, scaled up with crisp pixels. */
 (() => {
   "use strict";
 
@@ -8,26 +8,32 @@
     speedStart: 45,               // scroll speed, world px/s
     speedMax: 150,
     speedGain: 0.012,             // extra px/s per px travelled
+    planetDrift: 0.45,            // planets scroll slower than the rest, so there's time to break them
     shipAccel: 700,               // keyboard thrust, px/s²
     shipDrag: 4,
     shipMax: 120,
+    fireRate: 12,                 // twin-laser volleys per second
+    laserSpeed: 260,              // px/s
+    planetHits: 150,              // laser hits to break a planet
     gravity: 30000,               // black hole pull strength
     gravityRange: 70,             // px
     gapStart: 80,                 // px travelled between spawns at the start
     gapEnd: 30,                   // ...and at full difficulty
     fullDifficultyAt: 8000,       // px travelled
     blackHolesFrom: 600,          // px travelled before black holes appear
-    dustPoints: 25,
+    points: { dust: 25, rock: 10, planet: 500 },
     colors: {
       bg: "#0b0c0f",
       stars: ["#2a2e36", "#5a606c", "#f4f5f7"],
       ship: { b: "#9aa0ac", w: "#f4f5f7", c: "#5eb1ff" },
+      laser: "#ff6ac1",
       flame: ["#ffa657", "#e3b341", "#ff5f57"],
       rock: { g: "#6b717d", G: "#a0a6b2", d: "#3a3e48" },
       dust: { y: "#7ee787", w: "#f4f5f7" },
       disk: ["#ffa657", "#e3b341", "#f4f5f7", "#ff6ac1"],
       horizon: "#2d1f4a",
       halo: "#4a3a80",
+      hp: "#7ee787",
       planets: [
         ["#1d3557", "#3a6ea5", "#5eb1ff"],
         ["#4a1d3f", "#a03c78", "#ff6ac1"],
@@ -57,7 +63,7 @@
     }));
     return c;
   }
-  const SHIP = sprite(["..b......", ".bbb.....", "bbwwbb...", "bbwccbbbb", "bbwwbb...", ".bbb.....", "..b......"], C.ship);
+  const SHIP = sprite(["...b...", "...b...", "..bcb..", "..bcb..", ".bwwwb.", ".bwwwb.", "bbwwwbb", "bb.b.bb", "b.....b"], C.ship);
   const ROCKS = [
     sprite([".gggg.", "gGgggg", "ggggGg", "gggggd", "gGgggd", ".gddd."], C.rock),
     sprite([".gg.", "gGgg", "gggd", ".dd."], C.rock),
@@ -85,11 +91,11 @@
 
   // --- State ---
   let W = 0, H = 0, scale = 1;
-  let stars = [], things = [], bits = [];
-  let state = "title", clock = 0, dist = 0, bonus = 0, speed = 0, nextSpawn = 0, overTimer = 0, milestone = 0;
+  let stars = [], things = [], bits = [], shots = [];
+  let state = "title", clock = 0, dist = 0, bonus = 0, speed = 0, nextSpawn = 0, overTimer = 0, milestone = 0, reload = 0;
   const ship = { x: 0, y: 0, vx: 0, vy: 0, alive: true };
   const keys = new Set();
-  let target = null, best = 0;
+  let target = null, pointerFire = false, best = 0;
   try { best = +localStorage.getItem("pixel-voyager-best") || 0; } catch (e) {}
 
   function resize() {
@@ -101,30 +107,37 @@
     W = cvs.width = w; H = cvs.height = h;
     stars = [];
     for (let i = 0; i < (W * H) / 90; i++) stars.push({ x: rnd(0, W), y: rnd(0, H), l: i % 3 });
-    if (state !== "play") ship.y = H / 2;
-    ship.x = Math.min(ship.x || W * 0.2, W * 0.6);
-    ship.y = Math.min(ship.y, H - 4);
+    if (state !== "play") { ship.x = W / 2; ship.y = H * 0.8; }
+    ship.x = Math.min(ship.x, W - 4);
+    ship.y = Math.min(ship.y, H - 6);
     draw();
   }
 
-  // --- Spawning ---
+  // --- Spawning: everything enters from the top ---
   function spawn() {
     const k = Math.min(1, dist / CONFIG.fullDifficultyAt);
     nextSpawn = dist + CONFIG.gapStart + (CONFIG.gapEnd - CONFIG.gapStart) * k + rnd(0, 30);
     const roll = Math.random();
     if (roll < 0.12 && dist > CONFIG.blackHolesFrom) {
       const r = Math.round(rnd(4, 7));
-      things.push({ kind: "hole", x: W + 30, y: rnd(r + 10, H - r - 10), r, a: rnd(0, 6) });
+      things.push({ kind: "hole", x: rnd(r + 10, W - r - 10), y: -30, r, a: rnd(0, 6) });
     } else if (roll < 0.4) {
-      const r = Math.round(rnd(6, Math.max(8, Math.min(24, H / 5))));
+      const r = Math.round(rnd(6, Math.max(8, Math.min(24, W / 5))));
       const ramp = C.planets[(Math.random() * C.planets.length) | 0];
-      things.push({ kind: "planet", x: W + r + 2, y: rnd(-r / 2, H + r / 2), r, img: planet(r, ramp, Math.random() < 0.4) });
+      things.push({ kind: "planet", x: rnd(-r / 2, W + r / 2), y: -r - 2, r, ramp, hp: CONFIG.planetHits, hit: 0, img: planet(r, ramp, Math.random() < 0.4) });
     } else if (roll < 0.58) {
-      const y0 = rnd(12, H - 12), n = 3 + ((Math.random() * 3) | 0);
-      for (let i = 0; i < n; i++) things.push({ kind: "dust", x: W + 4 + i * 9, y: y0 + Math.sin(i * 0.9) * 6, r: 4 });
+      const x0 = rnd(12, W - 12), n = 3 + ((Math.random() * 3) | 0);
+      for (let i = 0; i < n; i++) things.push({ kind: "dust", x: x0 + Math.sin(i * 0.9) * 6, y: -4 - i * 9, r: 4 });
     } else {
       const big = Math.random() < 0.6, img = ROCKS[big ? 0 : 1];
-      things.push({ kind: "rock", x: W + 6, y: rnd(4, H - 4), r: big ? 2.5 : 1.5, vy: rnd(-12, 12), img });
+      things.push({ kind: "rock", x: rnd(4, W - 4), y: -6, r: big ? 2.5 : 1.5, vx: rnd(-12, 12), img });
+    }
+  }
+
+  function burst(x, y, n, colors, v) {
+    for (let i = 0; i < n; i++) {
+      const a = rnd(0, 6.28), s = rnd(v * 0.2, v);
+      bits.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rnd(0.3, 1.1), c: colors[i % colors.length] });
     }
   }
 
@@ -164,9 +177,9 @@
   function start() {
     if (state === "play") return;
     if (state !== "pause") {
-      things = []; bits = []; dist = 0; bonus = 0; milestone = 0;
+      things = []; bits = []; shots = []; dist = 0; bonus = 0; milestone = 0; reload = 0;
       speed = CONFIG.speedStart; nextSpawn = 60;
-      Object.assign(ship, { x: W * 0.2, y: H / 2, vx: 0, vy: 0, alive: true });
+      Object.assign(ship, { x: W / 2, y: H * 0.8, vx: 0, vy: 0, alive: true });
       beep(220, 880, 0.25);
     }
     state = "play";
@@ -179,6 +192,7 @@
   function pause() {
     if (state !== "play") return;
     state = "pause";
+    keys.clear(); pointerFire = false;
     setScreen("PAUSED", "Take a breath. Space is patient.", "Resume");
     startBtn.focus();
   }
@@ -187,10 +201,7 @@
     ship.alive = false;
     state = "over";
     overTimer = 1;
-    for (let i = 0; i < 30; i++) {
-      const a = rnd(0, 6.28), v = rnd(10, 60);
-      bits.push({ x: ship.x, y: ship.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rnd(0.5, 1.2), c: i % 2 ? C.flame[i % 3] : C.ship.w });
-    }
+    burst(ship.x, ship.y, 30, [C.ship.w, ...C.flame], 60);
     beep(300, 30, 0.6, "sawtooth", 0.06);
   }
 
@@ -203,17 +214,17 @@
     const flow = playing ? speed : state === "over" ? speed * 0.4 : 30;
 
     for (const s of stars) {
-      s.x -= flow * (0.15 + s.l * 0.3) * dt;
-      if (s.x < 0) { s.x += W; s.y = rnd(0, H); }
+      s.y += flow * (0.15 + s.l * 0.3) * dt;
+      if (s.y > H) { s.y -= H; s.x = rnd(0, W); }
     }
 
-    if (state === "title") { ship.x = W * 0.2; ship.y = H / 2 + Math.sin(clock * 2) * 4; return; }
+    if (state === "title") { ship.x = W / 2; ship.y = H * 0.8 + Math.sin(clock * 2) * 3; return; }
 
     for (const b of bits) { b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt; }
     bits = bits.filter((b) => b.life > 0);
 
     if (state === "over") {
-      for (const t of things) t.x -= flow * dt;
+      for (const t of things) t.y += flow * (t.kind === "planet" ? CONFIG.planetDrift : 1) * dt;
       if ((overTimer -= dt) <= 0 && screen.hidden) {
         const s = score(), record = s > best;
         if (record) { best = s; try { localStorage.setItem("pixel-voyager-best", s); } catch (e) {} }
@@ -245,9 +256,46 @@
       if (v > CONFIG.shipMax) { ship.vx *= CONFIG.shipMax / v; ship.vy *= CONFIG.shipMax / v; }
     }
 
+    // Twin lasers from the wing tips.
+    reload -= dt;
+    if ((keys.has("fire") || pointerFire) && reload <= 0) {
+      reload = 1 / CONFIG.fireRate;
+      shots.push({ x: Math.round(ship.x) - 3, y: ship.y - 1 }, { x: Math.round(ship.x) + 3, y: ship.y - 1 });
+      beep(1400, 700, 0.04, "square", 0.012);
+    }
+    for (const s of shots) {
+      s.y -= CONFIG.laserSpeed * dt;
+      for (const t of things) {
+        if (t.gone || t.kind === "dust") continue;
+        const dx = t.x - s.x, dy = t.y - s.y, d = Math.sqrt(dx * dx + dy * dy);
+        if (t.kind === "rock" && d < t.r + 2) {
+          t.gone = s.gone = true;
+          bonus += CONFIG.points.rock;
+          burst(t.x, t.y, 10, [C.rock.g, C.rock.G, C.rock.d], 40);
+          beep(400, 80, 0.12, "square", 0.03);
+        } else if (t.kind === "planet" && d < t.r) {
+          s.gone = true;
+          t.hit = 0.05;
+          burst(s.x, s.y, 2, [C.laser, t.ramp[2]], 30);
+          if (--t.hp <= 0) {
+            t.gone = true;
+            bonus += CONFIG.points.planet;
+            burst(t.x, t.y, 40 + t.r * 4, [...t.ramp, C.flame[0], C.ship.w], 30 + t.r * 3);
+            beep(200, 20, 0.8, "sawtooth", 0.06);
+          }
+        } else if (t.kind === "hole" && d < t.r + 3) {
+          s.gone = true;
+        }
+        if (s.gone) break;
+      }
+    }
+    shots = shots.filter((s) => !s.gone && s.y > -4);
+
     for (const t of things) {
-      t.x -= speed * dt;
-      if (t.kind === "rock") { t.y += t.vy * dt; if (t.y < 2 || t.y > H - 2) t.vy = -t.vy; }
+      if (t.gone) continue;
+      t.y += speed * (t.kind === "planet" ? CONFIG.planetDrift : 1) * dt;
+      if (t.kind === "rock") { t.x += t.vx * dt; if (t.x < 2 || t.x > W - 2) t.vx = -t.vx; }
+      if (t.hit > 0) t.hit -= dt;
       const dx = t.x - ship.x, dy = t.y - ship.y, d2 = dx * dx + dy * dy, d = Math.sqrt(d2);
       if (t.kind === "hole" && d < CONFIG.gravityRange) {
         const f = CONFIG.gravity / Math.max(d2, 16);
@@ -255,16 +303,16 @@
         ship.vy += (dy / d) * f * dt;
       }
       if (t.kind === "dust") {
-        if (d < t.r + 2) { t.gone = true; bonus += CONFIG.dustPoints; beep(880, 1760, 0.08); }
+        if (d < t.r + 2) { t.gone = true; bonus += CONFIG.points.dust; beep(880, 1760, 0.08); }
       } else if (d < t.r + 2) {
         crash();
         return;
       }
     }
-    things = things.filter((t) => !t.gone && t.x > -40);
+    things = things.filter((t) => !t.gone && t.y < H + 40);
 
-    ship.x = Math.max(6, Math.min(W * 0.6, ship.x + ship.vx * dt));
-    ship.y = Math.max(4, Math.min(H - 4, ship.y + ship.vy * dt));
+    ship.x = Math.max(4, Math.min(W - 4, ship.x + ship.vx * dt));
+    ship.y = Math.max(H * 0.35, Math.min(H - 6, ship.y + ship.vy * dt));
 
     const s = score();
     scoreEl.textContent = s;
@@ -279,22 +327,38 @@
 
     for (const t of things) {
       const x = Math.round(t.x), y = Math.round(t.y);
-      if (t.kind === "planet") ctx.drawImage(t.img, x - t.r, y - t.r);
+      if (t.kind === "planet") drawPlanet(t, x, y);
       else if (t.kind === "rock") ctx.drawImage(t.img, x - (t.img.width >> 1), y - (t.img.height >> 1));
-      else if (t.kind === "dust") { if ((clock * 6 + t.x) % 4 > 0.6) ctx.drawImage(DUST, x - 1, y - 1); }
+      else if (t.kind === "dust") { if ((clock * 6 + t.y) % 4 > 0.6) ctx.drawImage(DUST, x - 1, y - 1); }
       else drawHole(t, x, y);
     }
 
+    ctx.fillStyle = C.laser;
+    for (const s of shots) ctx.fillRect(s.x, Math.round(s.y) - 3, 1, 3);
+
     if (ship.alive) {
-      const x = Math.round(ship.x) - 4, y = Math.round(ship.y) - 3;
+      const x = Math.round(ship.x) - 3, y = Math.round(ship.y) - 4;
       ctx.drawImage(SHIP, x, y);
       if (state === "play" || state === "title") {
         const n = 1 + ((clock * 20) % 3 | 0);
         ctx.fillStyle = C.flame[(clock * 15 | 0) % 3];
-        ctx.fillRect(x - n, y + 3, n, 1);
+        ctx.fillRect(x + 3, y + 8, 1, n);
       }
     }
     for (const b of bits) { ctx.fillStyle = b.c; ctx.fillRect(b.x | 0, b.y | 0, 1, 1); }
+  }
+
+  // Planet: shakes a pixel when hit; a health bar appears once it's damaged.
+  function drawPlanet(t, x, y) {
+    const j = t.hit > 0 ? (clock * 60 & 1 ? 1 : -1) : 0;
+    ctx.drawImage(t.img, x - t.r + j, y - t.r);
+    if (t.hp < CONFIG.planetHits) {
+      const w = t.r * 2, by = y - t.r - 3;
+      ctx.fillStyle = C.horizon;
+      ctx.fillRect(x - t.r, by, w, 1);
+      ctx.fillStyle = C.hp;
+      ctx.fillRect(x - t.r, by, Math.ceil((w * t.hp) / CONFIG.planetHits), 1);
+    }
   }
 
   // Black hole: tilted accretion disk, back half behind the horizon, front half over it.
@@ -340,10 +404,10 @@
   }
 
   // --- Input ---
-  const KEYMAP = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right" };
+  const KEYMAP = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", Space: "fire" };
   addEventListener("keydown", (e) => {
     const k = KEYMAP[e.code];
-    if (k) { keys.add(k); target = null; if (state === "play") e.preventDefault(); return; }
+    if (k && state === "play") { keys.add(k); if (k !== "fire") target = null; e.preventDefault(); return; }
     if (e.code === "KeyP" || e.code === "Escape") { state === "play" ? pause() : state === "pause" && start(); return; }
     if ((e.code === "Space" || e.code === "Enter") && state !== "play" && !(state === "over" && screen.hidden)) {
       e.preventDefault();
@@ -351,13 +415,16 @@
     }
   });
   addEventListener("keyup", (e) => { const k = KEYMAP[e.code]; if (k) keys.delete(k); });
-  addEventListener("blur", () => keys.clear());
+  addEventListener("blur", () => { keys.clear(); pointerFire = false; });
 
-  // Touch: the ship follows the finger, held a little ahead of it so it stays visible.
-  const toWorld = (e) => ({ x: e.clientX / scale + (e.pointerType === "mouse" ? 0 : 14), y: e.clientY / scale });
+  // Mouse: the ship follows the cursor, hold the button to fire.
+  // Touch: the ship follows the finger, held a little above it so it stays visible, and fires while touching.
+  const toWorld = (e) => ({ x: e.clientX / scale, y: e.clientY / scale - (e.pointerType === "mouse" ? 0 : 14) });
   cvs.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" || e.buttons) target = toWorld(e); }, { passive: true });
-  cvs.addEventListener("pointerdown", (e) => { target = toWorld(e); }, { passive: true });
-  cvs.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") target = null; }, { passive: true });
+  cvs.addEventListener("pointerdown", (e) => { target = toWorld(e); pointerFire = true; }, { passive: true });
+  const release = (e) => { pointerFire = false; if (e.pointerType !== "mouse") target = null; };
+  cvs.addEventListener("pointerup", release, { passive: true });
+  cvs.addEventListener("pointercancel", release, { passive: true });
 
   startBtn.addEventListener("click", start);
   document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); else loop(); });
@@ -365,7 +432,7 @@
   let resizeTimer = 0;
   addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 100); });
 
-  if (matchMedia("(pointer: coarse)").matches) $("[data-keys]").textContent = "Drag to steer";
+  if (matchMedia("(pointer: coarse)").matches) $("[data-keys]").textContent = "Drag to steer, lasers fire while you touch";
   bestEl.textContent = best;
   setScreen("PIXEL VOYAGER", msg.textContent, "Launch");
   resize();

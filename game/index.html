@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Pixel Voyager · Eugene Shemchuk</title>
-  <meta name="description" content="A tiny 8-bit space game in the browser. Steer a ship past planets and asteroids, collect stardust and stay clear of black holes." />
+  <meta name="description" content="A tiny 8-bit space shooter in the browser. Blast asteroids, break planets with twin lasers, collect stardust and stay clear of black holes." />
   <link rel="canonical" href="https://eugeneshemchuk.github.io/Portfolio/game/" />
   <link rel="stylesheet" href="../css/tokens.css" />
   <style>
@@ -36,18 +36,18 @@
   <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
-  <h1 class="sr-only">Pixel Voyager: a tiny 8-bit space game</h1>
+  <h1 class="sr-only">Pixel Voyager: a tiny 8-bit space shooter</h1>
   <canvas aria-hidden="true"></canvas>
   <a class="ui back" href="../">← Eugene Shemchuk</a>
   <button class="ui sound" type="button" aria-pressed="false" hidden>Sound off</button>
   <p class="ui hud" aria-live="off" hidden>Score <b data-score>0</b> · Best <b data-best>0</b></p>
   <div class="screen" data-screen hidden>
     <p class="screen__title">PIXEL VOYAGER</p>
-    <p class="screen__msg" data-msg>Dodge planets and asteroids, collect stardust, and keep clear of black holes.</p>
+    <p class="screen__msg" data-msg>Blast asteroids, break planets, collect stardust, and keep clear of black holes.</p>
     <button type="button" data-start>Launch</button>
-    <p class="screen__keys" data-keys>Arrows / WASD or mouse to steer · P to pause</p>
+    <p class="screen__keys" data-keys>Arrows / WASD or mouse to steer · Space or hold click to fire · P to pause</p>
   </div>
-  <p class="fallback screen">Pixel Voyager is a tiny space game. It needs JavaScript, which this browser isn't running.</p>
+  <p class="fallback screen">Pixel Voyager is a tiny space shooter. It needs JavaScript, which this browser isn't running.</p>
   <script src="game.js" defer></script>
 </body>
 </html>

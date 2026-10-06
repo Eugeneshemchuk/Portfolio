@@ -1,0 +1,9 @@
+{
+  "name": "Topographic",
+  "description": "Hard contour bands in map colours, like elevation lines on a survey chart.",
+  "settings": { "magnify": 3, "smooth": 0, "zoom": 0.6, "spin": 0, "cycle": 0, "density": 0.7 },
+  "colours": {
+    "bright": true,
+    "gradient": [[0, "#f2e8cf"], [0.2, "#a7c957"], [0.4, "#6a994e"], [0.6, "#386641"], [0.8, "#bc4749"]]
+  }
+}

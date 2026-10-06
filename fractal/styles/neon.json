@@ -1,0 +1,18 @@
+{
+  "name": "Neon",
+  "description": "Thin magenta and cyan filaments on near-black, spinning the other way.",
+  "settings": {
+    "magnify": 1.5,
+    "smooth": 1,
+    "zoom": 1.2,
+    "spin": -0.03,
+    "cycle": 0,
+    "density": 1.8,
+    "warp": 0.3,
+    "warpSpeed": 0.3
+  },
+  "colours": {
+    "bright": true,
+    "gradient": [[0, "#07060d"], [0.3, "#ff2fd0"], [0.45, "#07060d"], [0.75, "#2ff3ff"], [0.9, "#07060d"]]
+  }
+}

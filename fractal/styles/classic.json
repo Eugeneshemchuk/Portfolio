@@ -1,0 +1,9 @@
+{
+  "name": "Classic",
+  "description": "Navy, blue, white and orange at full brightness, the look of the well-known Mandelbrot zoom renders.",
+  "settings": { "magnify": 2, "smooth": 1, "zoom": 1, "spin": 0.015, "cycle": 0, "density": 1 },
+  "colours": {
+    "bright": true,
+    "gradient": [[0, "#000764"], [0.16, "#206bcb"], [0.42, "#edffff"], [0.6425, "#ffaa00"], [0.8575, "#000200"]]
+  }
+}

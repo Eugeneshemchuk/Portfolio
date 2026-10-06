@@ -1,0 +1,6 @@
+{
+  "name": "Midnight",
+  "description": "The site's own palette: indigo, accent blue and cyan glowing out of the dark background.",
+  "settings": { "magnify": 2, "smooth": 1, "zoom": 1, "spin": 0.015, "cycle": 0, "density": 1 },
+  "colours": { "mode": 0, "bright": false }
+}

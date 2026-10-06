@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Pixel Voyager · Eugene Shemchuk</title>
+  <meta name="description" content="A tiny 8-bit space shooter in the browser. Blast asteroids, break planets with twin lasers, collect stardust and stay clear of black holes." />
+  <link rel="canonical" href="https://eugeneshemchuk.github.io/Portfolio/game/" />
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <style>
+    :root { --edge-top: max(var(--space-4), env(safe-area-inset-top)); --edge-right: max(var(--space-4), env(safe-area-inset-right)); --edge-bottom: max(var(--space-4), env(safe-area-inset-bottom)); --edge-left: max(var(--space-4), env(safe-area-inset-left)); }
+    html, body { margin: 0; height: 100%; overscroll-behavior: none; background: var(--color-bg); color: var(--color-text); font-family: var(--font-mono); }
+    body { overflow: hidden; }
+    /* Low-res canvas scaled up by an integer factor: crisp pixels. */
+    canvas { position: fixed; top: 0; left: 0; display: block; image-rendering: pixelated; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+    .ui { position: fixed; z-index: 1; font-size: var(--fs-sm); color: var(--color-text-muted); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+    .back, .sound { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); color: var(--color-text); font: inherit; text-decoration: none; background: color-mix(in srgb, var(--color-bg) 70%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; }
+    .back { top: var(--edge-top); left: var(--edge-left); }
+    .sound { top: var(--edge-top); right: var(--edge-right); }
+    .sound[aria-pressed="true"] { border-color: var(--color-accent); }
+    .back:hover, .sound:hover { border-color: var(--color-accent); }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+    .hud { left: var(--edge-left); bottom: var(--edge-bottom); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
+    .hud b { color: var(--color-text); font-weight: var(--font-weight-regular); }
+    .screen { position: fixed; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: var(--space-3); padding: var(--space-4); text-align: center; pointer-events: none; }
+    .screen[hidden] { display: none; }
+    .screen > * { margin: 0; max-width: 32ch; }
+    .screen__title { color: var(--color-text); font-size: var(--fs-xl); letter-spacing: 0.15em; }
+    .screen__msg { color: var(--color-text); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
+    .screen__keys { color: var(--color-text-muted); }
+    .screen button { pointer-events: auto; min-height: 44px; padding: 0 var(--space-5); color: var(--color-on-button); font: inherit; letter-spacing: 0.1em; text-transform: uppercase; background: var(--color-button); border: 0; border-radius: var(--radius-md); cursor: pointer; }
+    .screen button:hover { background: var(--color-button-hover); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .js .fallback { display: none; }
+  </style>
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <h1 class="sr-only">Pixel Voyager: a tiny 8-bit space shooter</h1>
+  <canvas aria-hidden="true"></canvas>
+  <a class="ui back" href="../">← Eugene Shemchuk</a>
+  <button class="ui sound" type="button" aria-pressed="false" hidden>Sound off</button>
+  <p class="ui hud" aria-live="off" hidden>Score <b data-score>0</b> · Best <b data-best>0</b></p>
+  <div class="screen" data-screen hidden>
+    <p class="screen__title">PIXEL VOYAGER</p>
+    <p class="screen__msg" data-msg>Blast asteroids, break planets, collect stardust, and keep clear of black holes.</p>
+    <button type="button" data-start>Launch</button>
+    <p class="screen__keys" data-keys>Arrows / WASD or mouse to steer · Space or hold click to fire · P to pause</p>
+  </div>
+  <p class="fallback screen">Pixel Voyager is a tiny space shooter. It needs JavaScript, which this browser isn't running.</p>
+  <script src="game.js" defer></script>
+</body>
+</html>

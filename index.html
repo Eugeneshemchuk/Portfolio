@@ -199,11 +199,35 @@
             <div class="hero__cta">
               <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Schedule 30 min call</a>
               <a class="button button--secondary" href="fractal/">Fractal Drift</a>
-              <a class="button button--secondary" href="game/">Space mini-game</a>
+              <a class="button button--secondary" href="game/">Pixel Voyager</a>
             </div>
             <button class="fun-toggle" type="button" hidden>Turn off fun</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="clips" aria-labelledby="clips-heading">
+      <div class="container">
+        <article class="terminal clips__card">
+          <div class="terminal__bar" aria-hidden="true">
+            <span class="terminal__dot"></span>
+            <span class="terminal__dot"></span>
+            <span class="terminal__dot"></span>
+            <span class="terminal__title">~/clips</span>
+          </div>
+          <div class="terminal__body clips__body">
+            <div class="clips__text">
+              <p class="eyebrow">$ ./clips --auto</p>
+              <h2 id="clips-heading">Automated captions and video editing</h2>
+              <p>Send a video, a voice note or a line of text. Get back a finished vertical clip with word-by-word captions, voiceover and music. Runs fully on-device: no LLM calls, no per-clip cost.</p>
+              <a class="button button--primary clips__link" href="clips/">See demo</a>
+            </div>
+            <picture class="clips__visual">
+              <img src="assets/img/clips/card-960.webp" srcset="assets/img/clips/card-480.webp 480w, assets/img/clips/card-960.webp 960w" sizes="(min-width: 768px) 480px, 92vw" width="960" height="600" alt="Three vertical clips made by the pipeline: a talking-head video with highlighted captions, and two text-to-video clips over fractal backgrounds" loading="lazy" decoding="async" />
+            </picture>
+          </div>
+        </article>
       </div>
     </section>
 

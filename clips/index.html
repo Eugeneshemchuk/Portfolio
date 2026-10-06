@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automated captions and video editing · Eugene Shemchuk</title>
+  <meta name="description" content="An on-device pipeline that turns a video, a voice note or a line of text into a finished vertical clip with word-by-word captions, voiceover and music. No LLM calls and no per-clip cost." />
+  <link rel="canonical" href="https://eugeneshemchuk.github.io/Portfolio/clips/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Automated captions and video editing" />
+  <meta property="og:description" content="Video, voice or text in. Captioned, edited vertical clip out. Runs on-device, no LLM calls, no per-clip cost." />
+  <meta property="og:url" content="https://eugeneshemchuk.github.io/Portfolio/clips/" />
+  <meta property="og:image" content="https://eugeneshemchuk.github.io/Portfolio/assets/img/clips/card-960.webp" />
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <style>
+    .top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); max-width: var(--content-max-width); margin-inline: auto; padding: var(--space-4) var(--gutter); }
+    .back { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-text-muted); text-decoration: none; }
+    .back:hover { color: var(--color-text); }
+    main section { padding-block: var(--space-8); }
+    h2 { font-size: var(--fs-xl); margin-bottom: var(--space-4); }
+    .lede { color: var(--color-text-muted); font-size: var(--fs-md); max-width: 46ch; }
+    .lede + .lede { margin-top: var(--space-3); }
+
+    /* Hero */
+    .hero { display: grid; gap: var(--space-7); align-items: center; padding-block-start: var(--space-6); }
+    .hero h1 { font-size: var(--fs-2xl); line-height: var(--line-height-tight); letter-spacing: var(--tracking-display); margin-bottom: var(--space-4); }
+    .cta { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-6); }
+    .hero__phones { display: flex; justify-content: center; align-items: center; }
+    .hero__phones .phone { width: 34%; max-width: 200px; }
+    .hero__phones .phone:nth-child(1) { transform: rotate(-6deg) translateX(14%); }
+    .hero__phones .phone:nth-child(2) { position: relative; z-index: 1; width: 38%; max-width: 220px; }
+    .hero__phones .phone:nth-child(3) { transform: rotate(6deg) translateX(-14%); }
+
+    /* Phone frame around a 9:16 screenshot */
+    .phone { margin: 0; padding: 6px; background: #08090c; border: 1px solid var(--color-border); border-radius: 22px; box-shadow: 0 18px 40px rgb(0 0 0 / 0.45); }
+    .phone img { display: block; width: 100%; height: auto; border-radius: 16px; }
+
+    /* Facts strip */
+    .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+    .facts > div { padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+    .facts dt { font-size: var(--fs-xl); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-display); }
+    .facts dd { margin: var(--space-1) 0 0; color: var(--color-text-muted); font-size: var(--fs-sm); }
+    .facts > div:nth-child(1) dt { color: var(--color-syntax-green); }
+    .facts > div:nth-child(2) dt { color: var(--color-syntax-amber); }
+    .facts > div:nth-child(3) dt { color: var(--color-accent); }
+    .facts > div:nth-child(4) dt { color: var(--color-syntax-pink); }
+
+    /* Inputs */
+    .inputs { display: grid; gap: var(--space-4); margin-top: var(--space-6); }
+    .inputs article { padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+    .inputs h3 { font-size: var(--fs-md); margin-bottom: var(--space-3); }
+    .inputs .tag { display: block; margin-bottom: var(--space-2); font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-accent); }
+    .inputs ul { margin: 0; padding-left: 1.1em; color: var(--color-text-muted); }
+    .inputs li + li { margin-top: var(--space-2); }
+
+    /* Gallery */
+    .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--space-4); margin-top: var(--space-6); padding: 0; list-style: none; }
+    .gallery figcaption { margin-top: var(--space-3); font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-text-muted); }
+    .gallery figcaption b { display: block; color: var(--color-text); font-weight: var(--font-weight-regular); }
+
+    /* Pipeline log */
+    .log { margin: var(--space-6) 0 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: var(--fs-sm); }
+    .log li { display: grid; grid-template-columns: 9ch minmax(0, 1fr); gap: var(--space-4); padding-block: var(--space-3); border-top: 1px solid var(--color-border-soft); }
+    .log li:first-child { border-top: 0; }
+    .log b { color: var(--color-syntax-green); font-weight: var(--font-weight-regular); }
+    .log span { color: var(--color-text-muted); }
+
+    .why { display: grid; gap: var(--space-5); margin-top: var(--space-6); }
+    .why h3 { font-size: var(--fs-md); margin-bottom: var(--space-2); }
+    .why p { color: var(--color-text-muted); }
+
+    .final { text-align: center; }
+    .final .lede { margin-inline: auto; }
+    .final .cta { justify-content: center; }
+
+    @media (min-width: 768px) {
+      .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+      .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .inputs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
+      .why { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .log li { grid-template-columns: 12ch minmax(0, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .gallery { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-4); }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="top">
+    <a class="back" href="../">← Eugene Shemchuk</a>
+    <a class="back" href="https://calendly.com/shemchuk-eugene/30min">Book a call ↗</a>
+  </header>
+
+  <main id="main" class="container">
+    <section class="hero" aria-labelledby="hero-heading">
+      <div>
+        <p class="eyebrow">$ ./clips --auto</p>
+        <h1 id="hero-heading">Automated captions and video editing</h1>
+        <p class="lede">Send a video, a voice note or a line of text. Get back a finished 9:16 clip with word-by-word captions, voiceover and music, ready for TikTok, Reels or Shorts.</p>
+        <p class="lede">It runs on your own machine. No LLM calls on any run, no API bills, no per-clip cost.</p>
+        <div class="cta">
+          <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Find out more</a>
+          <a class="button button--secondary" href="#clips">See real clips</a>
+        </div>
+      </div>
+      <div class="hero__phones" aria-hidden="true">
+        <figure class="phone"><img src="../assets/img/clips/drift-blue-360.webp" width="360" height="640" alt="" /></figure>
+        <figure class="phone"><img src="../assets/img/clips/face-540.webp" width="540" height="960" alt="" fetchpriority="high" /></figure>
+        <figure class="phone"><img src="../assets/img/clips/drift-pink-360.webp" width="360" height="640" alt="" /></figure>
+      </div>
+    </section>
+
+    <section aria-label="Key facts" style="padding-block-start: 0;">
+      <dl class="facts">
+        <div><dt>0</dt><dd>LLM calls per clip</dd></div>
+        <div><dt>$0</dt><dd>per clip: open-source models and FFmpeg</dd></div>
+        <div><dt>~38 s</dt><dd>to render an 11-16 s clip on a 4-CPU box</dd></div>
+        <div><dt>&lt;10 MB</dt><dd>9:16, 30 fps, loudness-levelled output</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="inputs-heading">
+      <h2 id="inputs-heading">Three ways in, one clip out</h2>
+      <p class="lede">Everything is sent from a phone through a Telegram bot. The finished clip comes back to the chat or lands in your TikTok drafts.</p>
+      <div class="inputs">
+        <article>
+          <span class="tag">input: video</span>
+          <h3>Automated edit</h3>
+          <ul>
+            <li>Speech transcribed locally with word timestamps.</li>
+            <li>Leading filler dropped, pauses over 0.8 s cut out.</li>
+            <li>Cropped to 9:16, opening hook (glitch or shake), word-highlighted captions.</li>
+            <li>Top line is your quote, or the punchiest phrase you actually said.</li>
+          </ul>
+        </article>
+        <article>
+          <span class="tag">input: voice note</span>
+          <h3>Your voice, captioned</h3>
+          <ul>
+            <li>Your own voice is kept: cleaned, trimmed and levelled.</li>
+            <li>Captions follow it word by word.</li>
+            <li>Background is a generated fractal dive, different every clip.</li>
+            <li>A new music bed is composed for each clip.</li>
+          </ul>
+        </article>
+        <article>
+          <span class="tag">input: text</span>
+          <h3>Text to video</h3>
+          <ul>
+            <li>An open neural voice (Kokoro) reads your text, on-device.</li>
+            <li>Captions are timed from the generated voice itself.</li>
+            <li>Same generated visuals and music as voice clips.</li>
+            <li>Fonts, colours, effects and music tweakable per clip.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="clips" aria-labelledby="clips-heading">
+      <h2 id="clips-heading">Real clips, straight out of the pipeline</h2>
+      <p class="lede">Unretouched frames from clips it rendered. No manual editing on any of them.</p>
+      <ul class="gallery">
+        <li><figure class="phone"><img src="../assets/img/clips/face-360.webp" srcset="../assets/img/clips/face-360.webp 360w, ../assets/img/clips/face-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Talking-head video with a quote on top and the caption 'DO IT JUST', current word highlighted in yellow" loading="lazy" decoding="async" /></figure></li>
+        <li><figure class="phone"><img src="../assets/img/clips/closeup-360.webp" srcset="../assets/img/clips/closeup-360.webp 360w, ../assets/img/clips/closeup-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Close-up selfie video with the caption 'PROVIDE LEMONS'" loading="lazy" decoding="async" /></figure></li>
+        <li><figure class="phone"><img src="../assets/img/clips/screen-360.webp" srcset="../assets/img/clips/screen-360.webp 360w, ../assets/img/clips/screen-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Screen recording of a music app with a quote overlaid on top" loading="lazy" decoding="async" /></figure></li>
+        <li><figure class="phone"><img src="../assets/img/clips/drift-gold-360.webp" srcset="../assets/img/clips/drift-gold-360.webp 360w, ../assets/img/clips/drift-gold-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Text-to-video clip over a blue and gold fractal with the caption 'YOU REACH YOUR'" loading="lazy" decoding="async" /></figure></li>
+        <li><figure class="phone"><img src="../assets/img/clips/drift-pink-360.webp" srcset="../assets/img/clips/drift-pink-360.webp 360w, ../assets/img/clips/drift-pink-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Clip over a magenta and cyan fractal with the caption 'ACQUIRE SELF-DISCIPLINE'" loading="lazy" decoding="async" /></figure></li>
+        <li><figure class="phone"><img src="../assets/img/clips/drift-blue-360.webp" srcset="../assets/img/clips/drift-blue-360.webp 360w, ../assets/img/clips/drift-blue-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Clip over a fractal edge with the caption 'JUST TAKE ONE'" loading="lazy" decoding="async" /></figure></li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="how-heading">
+      <h2 id="how-heading">How it works</h2>
+      <p class="lede">Plain Python and FFmpeg in one Docker container. Every step is deterministic and resumable.</p>
+      <ol class="log">
+        <li><b>receive</b><span>Telegram bot takes a video (or an album, joined in order), a voice note or text. Flags like <code>fractal=5</code> override the style for one clip.</span></li>
+        <li><b>transcribe</b><span>faster-whisper runs locally and returns word-level timestamps.</span></li>
+        <li><b>plan</b><span>Segments picked from the timestamps by rules, not a model: trim filler, cut long pauses, fit the target length.</span></li>
+        <li><b>voice</b><span>Your own recording, cleaned and levelled, or Kokoro text-to-speech for typed text.</span></li>
+        <li><b>visuals</b><span>9:16 crop of your footage, or a Mandelbrot dive rendered in numpy with a style and target seeded per clip.</span></li>
+        <li><b>music</b><span>A meditative MIDI bed composed per clip and rendered with FluidSynth, so no two clips share audio.</span></li>
+        <li><b>render</b><span>FFmpeg burns in word-highlighted captions and the hook, mixes to -14 LUFS, caps the file at 10 MB.</span></li>
+        <li><b>deliver</b><span>Back to the chat, or uploaded to your TikTok drafts to post with one tap.</span></li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="why-heading">
+      <h2 id="why-heading">Why on-device</h2>
+      <div class="why">
+        <div><h3>Free to run</h3><p>Open-source models and FFmpeg. No API keys, no per-minute pricing, no usage caps. Volume costs electricity, not invoices.</p></div>
+        <div><h3>Private by default</h3><p>Footage never leaves your machine until you publish it. Job folders delete themselves after 30 days.</p></div>
+        <div><h3>Predictable</h3><p>No LLM in the loop means no prompt drift and no surprise edits. Same input, same rules, same style. A failed job resumes from the step that broke.</p></div>
+      </div>
+    </section>
+
+    <section class="final" aria-labelledby="final-heading">
+      <h2 id="final-heading">Want this for your content?</h2>
+      <p class="lede">I can set it up for your brand, fonts and channels, or build a pipeline tailored to your workflow. Book a 30 minute call.</p>
+      <div class="cta">
+        <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Find out more</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Eugene Shemchuk · Amsterdam · <a href="../#contact">Get in touch</a></p>
+  </footer>
+</body>
+</html>

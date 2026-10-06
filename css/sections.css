@@ -178,6 +178,54 @@
 }
 
 /* ==========================================================================
+   #clips
+   ========================================================================== */
+
+#clips {
+  padding-block: var(--space-7) 0;
+}
+
+/* Whole card is the link target via .clips__link::after */
+.clips__card {
+  position: relative;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.clips__card:hover {
+  border-color: var(--color-accent);
+}
+
+.clips__body {
+  display: grid;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+.clips__text p:not(.eyebrow) {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.clips__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.clips__visual img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+@media (min-width: 768px) {
+  .clips__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    padding: var(--space-7);
+  }
+}
+
+/* ==========================================================================
    #about
    ========================================================================== */
 

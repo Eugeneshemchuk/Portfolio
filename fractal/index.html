@@ -2,23 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Fractal Drift · Eugene Shemchuk</title>
   <meta name="description" content="A slow zoom into the Mandelbrot set, rendered live in the browser. Click or scroll to zoom into any spot, and play with colours, warp and speed." />
   <link rel="canonical" href="https://eugeneshemchuk.github.io/Portfolio/fractal/" />
   <link rel="stylesheet" href="../css/tokens.css" />
   <style>
-    html, body { margin: 0; height: 100%; background: var(--color-bg); color: var(--color-text); font-family: var(--font-sans); }
+    :root { --edge-top: max(var(--space-4), env(safe-area-inset-top)); --edge-right: max(var(--space-4), env(safe-area-inset-right)); --edge-bottom: max(var(--space-4), env(safe-area-inset-bottom)); --edge-left: max(var(--space-4), env(safe-area-inset-left)); }
+    html, body { margin: 0; height: 100%; overscroll-behavior: none; background: var(--color-bg); color: var(--color-text); font-family: var(--font-sans); }
     body { overflow: hidden; }
-    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: manipulation; }
-    .ui { position: fixed; z-index: 1; font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-text-muted); text-shadow: 0 1px 6px var(--color-bg); }
-    .back { top: var(--space-4); left: var(--space-4); display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); color: var(--color-text); text-decoration: none; background: color-mix(in srgb, var(--color-bg) 70%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+    /* touch-action: none hands every touch to fractal.js: no page pinch, double-tap zoom or pull-to-refresh. */
+    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    canvas.dragging { cursor: grabbing; }
+    .ui { position: fixed; z-index: 1; font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-text-muted); text-shadow: 0 1px 6px var(--color-bg); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+    .back { top: var(--edge-top); left: var(--edge-left); display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); color: var(--color-text); text-decoration: none; background: color-mix(in srgb, var(--color-bg) 70%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
     .back:hover { border-color: var(--color-accent); }
     .back:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-    .readout { left: var(--space-4); bottom: var(--space-4); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
+    .readout { left: var(--edge-left); bottom: var(--edge-bottom); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
     .readout b { color: var(--color-text); font-weight: var(--font-weight-regular); }
-    .hint { right: var(--space-4); bottom: var(--space-4); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
-    .controls { top: var(--space-4); right: var(--space-4); max-height: calc(100dvh - 2 * var(--space-4)); overflow-y: auto; overscroll-behavior: contain; color: var(--color-text); background: color-mix(in srgb, var(--color-bg) 92%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-shadow: none; }
+    .hint { right: var(--edge-right); bottom: var(--edge-bottom); margin: 0; pointer-events: none; padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--color-bg) 70%, transparent); border-radius: var(--radius-sm); }
+    .controls { top: var(--edge-top); right: var(--edge-right); max-height: calc(100dvh - var(--edge-top) - var(--edge-bottom)); overflow-y: auto; overscroll-behavior: contain; color: var(--color-text); background: color-mix(in srgb, var(--color-bg) 92%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); text-shadow: none; }
     .controls[open] { width: min(16rem, calc(100vw - 2 * var(--space-4))); }
     .controls summary { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 var(--space-3); cursor: pointer; list-style: none; background: inherit; }
     .controls summary::-webkit-details-marker { display: none; }
@@ -38,9 +41,18 @@
     .controls button { min-height: 44px; font: inherit; cursor: pointer; }
     .controls button:hover { border-color: var(--color-accent); }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    /* Touch screens: 44px targets, and 16px selects so iOS doesn't zoom the page on focus. */
+    @media (pointer: coarse) {
+      .controls input, .controls select, .controls .controls__check { min-height: 44px; }
+      .controls select { font-size: 16px; }
+    }
+    /* Phones: controls sit by the thumb and open as a bottom sheet that leaves the fractal in view. */
     @media (max-width: 480px) {
-      .controls[open] { left: var(--space-4); width: auto; z-index: 2; background: var(--color-bg); }
-      .hint { right: auto; left: var(--space-4); bottom: calc(var(--space-4) + 2.25rem); }
+      .controls { top: auto; bottom: var(--edge-bottom); }
+      .controls[open] { left: 0; right: 0; bottom: 0; width: auto; max-height: 60dvh; z-index: 2; padding-bottom: env(safe-area-inset-bottom); background: var(--color-bg); border-width: 1px 0 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+      .controls[open] summary { padding-left: var(--edge-left); padding-right: var(--edge-right); }
+      .readout { max-width: calc(100vw - var(--edge-left) - var(--edge-right) - 8.5rem); }
+      .hint { right: auto; left: var(--edge-left); bottom: calc(var(--edge-bottom) + 2.25rem); }
     }
     .fallback { position: fixed; inset: 0; display: grid; place-content: center; padding: var(--space-4); text-align: center; }
     .js .fallback { display: none; }
@@ -53,7 +65,7 @@
   <canvas aria-hidden="true"></canvas>
   <a class="ui back" href="../">← Eugene Shemchuk</a>
   <p class="ui readout" aria-live="off"><b data-target>Mandelbrot set</b> <span data-zoom></span></p>
-  <p class="ui hint">Click or scroll to zoom</p>
+  <p class="ui hint">Click or scroll to zoom, drag to move</p>
   <details class="ui controls" hidden>
     <summary>Controls</summary>
     <form class="controls__body">

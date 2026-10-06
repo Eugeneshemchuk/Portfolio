@@ -11,9 +11,16 @@
     maxZoom: 120000,     // deep zoom via perturbation; drops to 6000 without float textures
     fadeTime: 1.6,       // sec, fade out/in between targets
     minScale: 1,         // adaptive resolution never drops below this (x CSS px), or below Resolution if lower
+    minScaleTouch: 0.75, // ...on touch screens, whose GPUs are usually slower
+    touchRes: 1.5,       // starting Resolution on touch screens
+    slowFrame: 0.026,    // sec: frames averaging slower than this lower the resolution
     glide: 0.9,          // per sec, how fast a clicked point slides to the centre
     clickBoost: 2.5,     // extra zoom speed right after a click, decays over ~1s
     wheelZoom: 0.002,    // zoom per scrolled pixel, on a log scale: scroll up zooms in, down zooms out
+    wheelEase: 14,       // per sec, how fast a scroll's zoom catches up (higher = snappier)
+    tapSlop: 10,         // CSS px a press can move and still count as a tap
+    friction: 4,         // per sec, how fast a flicked view slows down
+    maxFling: 3000,      // CSS px per sec, fastest flick
     warpFadeStart: 20,   // zoom where Warp starts easing off...
     warpFadeEnd: 2000,   // ...and where it is gone, so deep views show the true set
     // Each target sits on a boundary "river" that stays detailed at every depth.
@@ -186,6 +193,7 @@
   }
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var touch = window.matchMedia("(pointer: coarse)").matches;
   var labelEl = document.querySelector("[data-target]");
   var zoomEl = document.querySelector("[data-zoom]");
 
@@ -199,7 +207,8 @@
   var t = 0;           // seconds into the current dive
   var angle = 0, phase = 0;
   var S = {};          // live control values
-  var rafId = null, lastTime = 0, slowFrames = 0, lastReadout = 0;
+  var rafId = null, lastTime = 0, lastReadout = 0;
+  var frameAvg = 1 / 60, sinceAdapt = 0;
   var logMax = Math.log(CONFIG.maxZoom);
   var warpAngle = 0, z0x = 0, z0y = 0;
 
@@ -288,16 +297,19 @@
     var dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0;
     lastTime = time;
 
-    // Adaptive resolution: if frames run long for a while, render fewer pixels.
-    var floor = Math.min(CONFIG.minScale, S.res);
-    if (dt > 0.026 && scale > floor) {
-      if (++slowFrames > 20) {
-        scale = Math.max(scale - 0.15, floor);
-        slowFrames = 0;
+    // Adaptive resolution: when frames average slow for half a second, cut the pixel count in
+    // proportion (cost ~ scale^2), so a slow phone settles in a step or two instead of stuttering.
+    // Single hitches are capped so they don't count as a slow device.
+    if (dt) {
+      frameAvg += (Math.min(dt, 0.05) - frameAvg) * (1 - Math.exp(-dt / 0.25));
+      sinceAdapt += dt;
+      var floor = Math.min(touch ? CONFIG.minScaleTouch : CONFIG.minScale, S.res);
+      if (sinceAdapt > 0.5 && frameAvg > CONFIG.slowFrame && scale > floor) {
+        scale = Math.max(scale * Math.max(Math.sqrt(0.8 * CONFIG.slowFrame / frameAvg), 0.6), floor);
+        frameAvg = 0.8 * CONFIG.slowFrame;
+        sinceAdapt = 0;
         resize();
       }
-    } else if (slowFrames > 0) {
-      slowFrames--;
     }
 
     t += dt;
@@ -306,16 +318,7 @@
     angle += dt * S.spin;
     phase += dt * S.cycle;
     warpAngle += dt * S.warpSpeed;
-    // Scroll zooms around the point under the cursor, read once per frame.
-    if (wheelDy) {
-      retarget(wheelX, wheelY);
-      logZoom = Math.min(Math.max(logZoom - wheelDy * CONFIG.wheelZoom, 0), logMax);
-      wheelDy = 0;
-      holdOff();
-    }
-    var g = Math.exp(-dt * CONFIG.glide);
-    sx *= g;
-    sy *= g;
+    applyInput(dt);
     // Depth stops at the precision limit; only time moves on to the next destination.
     if (logZoom > logMax) logZoom = logMax;
     if (t >= diveEnd()) startDive((targetIndex + 1) % CONFIG.targets.length);
@@ -364,7 +367,76 @@
   // this frame, then glides to the centre while the zoom carries on.
   var hintEl = document.querySelector(".hint");
   if (reduceMotion) hintEl.hidden = true; // nothing moves, so clicks don't zoom
+  else if (touch) hintEl.textContent = "Tap, drag or pinch to explore";
   var wheelDy = 0, wheelX = 0, wheelY = 0;
+
+  // Pointer input is only recorded in the handlers and applied once per frame in applyInput().
+  var pointers = new Map(); // pointerId -> { x, y, t, vx, vy } for each press on the canvas
+  var tap = null;           // where a press started, until it moves too far to be a tap
+  var tapAt = null;         // a finished tap, waiting for the next frame
+  var grab = null;          // the pointer that just started a drag
+  var multi = false;        // this gesture has used two fingers
+  var dragged = false;      // a drag or pinch moved the view; re-centre once it settles
+  var panX = 0, panY = 0, pinchLog = 0, pinchRot = 0, pinchX = 0, pinchY = 0;
+  var velX = 0, velY = 0;   // flick speed, CSS px per sec
+
+  function clampZoom(z) {
+    return Math.min(Math.max(z, 0), logMax);
+  }
+
+  function applyInput(dt) {
+    // Drag and pinch track the fingers 1:1: the point under them stays under them.
+    if (panX || panY) {
+      sx += panX / cssH;
+      sy -= panY / cssH;
+      panX = panY = 0;
+      holdOff();
+    }
+    // A drag grabs the point under the finger, so the dive zooms where the finger is.
+    if (grab) {
+      retarget(grab.x, grab.y);
+      grab = null;
+    }
+    if (pinchLog || pinchRot) {
+      retarget(pinchX, pinchY);
+      logZoom = clampZoom(logZoom + pinchLog);
+      angle += pinchRot;
+      pinchLog = pinchRot = 0;
+    }
+    if (tapAt) {
+      retarget(tapAt.x, tapAt.y);
+      boost = CONFIG.clickBoost;
+      holdOff();
+      tapAt = null;
+    }
+    // Scroll zooms around the point under the cursor, eased over a few frames.
+    if (wheelDy) {
+      var step = Math.abs(wheelDy) < 1 ? wheelDy : wheelDy * (1 - Math.exp(-dt * CONFIG.wheelEase));
+      retarget(wheelX, wheelY);
+      logZoom = clampZoom(logZoom - step * CONFIG.wheelZoom);
+      wheelDy -= step;
+      holdOff();
+    }
+    if (pointers.size) return; // the view stays where the hand holds it
+    // A flick keeps the view sliding and slows it down.
+    if (velX || velY) {
+      sx += velX * dt / cssH;
+      sy -= velY * dt / cssH;
+      var f = Math.exp(-dt * CONFIG.friction);
+      velX *= f;
+      velY *= f;
+      if (velX * velX + velY * velY > 400) return;
+      velX = velY = 0;
+    }
+    // After a drag, the dive carries on into whatever is now in the middle.
+    if (dragged) {
+      retarget(cssW / 2, cssH / 2);
+      dragged = false;
+    }
+    var g = Math.exp(-dt * CONFIG.glide);
+    sx *= g;
+    sy *= g;
+  }
 
   function retarget(clientX, clientY) {
     var s = 2.6 / (Math.exp(logZoom) * S.magnify);
@@ -382,13 +454,74 @@
     uploadOrbit();
   }
 
+  // Tap or click dives into a point; drag (with a flick) moves the view; pinch zooms and turns it.
   canvas.addEventListener("pointerdown", function (e) {
-    if (reduceMotion) return;
+    if (reduceMotion || e.button > 0) return;
     hintEl.hidden = true; // the hint has done its job once someone has used it
-    retarget(e.clientX, e.clientY);
-    boost = CONFIG.clickBoost;
-    holdOff();
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, t: e.timeStamp, vx: 0, vy: 0 });
+    velX = velY = 0; // a touch catches a flick
+    multi = pointers.size > 1;
+    tap = multi ? null : { x: e.clientX, y: e.clientY };
   }, { passive: true });
+
+  canvas.addEventListener("pointermove", function (e) {
+    var p = pointers.get(e.pointerId);
+    if (!p) return;
+    var x = e.clientX, y = e.clientY;
+    if (tap && Math.abs(x - tap.x) + Math.abs(y - tap.y) > CONFIG.tapSlop) {
+      tap = null;
+      grab = p;
+      dragged = true;
+      canvas.classList.add("dragging");
+    }
+    if (pointers.size === 1) {
+      panX += x - p.x;
+      panY += y - p.y;
+      var dt = (e.timeStamp - p.t) / 1000;
+      if (dt > 0) { // smoothed finger speed, for the flick on release
+        var k = Math.min(dt / 0.05, 1);
+        p.vx += ((x - p.x) / dt - p.vx) * k;
+        p.vy += ((y - p.y) / dt - p.vy) * k;
+      }
+    } else {
+      var o;
+      pointers.forEach(function (q) { if (q !== p && !o) o = q; });
+      var d0 = Math.hypot(p.x - o.x, p.y - o.y), d1 = Math.hypot(x - o.x, y - o.y);
+      panX += (x - p.x) / 2;
+      panY += (y - p.y) / 2;
+      if (d0 > 0 && d1 > 0) pinchLog += Math.log(d1 / d0);
+      var da = Math.atan2(y - o.y, x - o.x) - Math.atan2(p.y - o.y, p.x - o.x);
+      pinchRot += da > Math.PI ? da - 2 * Math.PI : da < -Math.PI ? da + 2 * Math.PI : da;
+      pinchX = (x + o.x) / 2;
+      pinchY = (y + o.y) / 2;
+      dragged = true;
+    }
+    p.x = x;
+    p.y = y;
+    p.t = e.timeStamp;
+  }, { passive: true });
+
+  function release(e) {
+    var p = pointers.get(e.pointerId);
+    if (!p) return;
+    pointers.delete(e.pointerId);
+    if (pointers.size) return;
+    canvas.classList.remove("dragging");
+    if (e.type !== "pointerup") return;
+    if (tap) tapAt = { x: e.clientX, y: e.clientY };
+    else if (!multi && e.timeStamp - p.t < 80) { // no flick if the finger stopped before lifting
+      var v = Math.hypot(p.vx, p.vy), cap = v > CONFIG.maxFling ? CONFIG.maxFling / v : 1;
+      velX = p.vx * cap;
+      velY = p.vy * cap;
+    }
+    tap = null;
+  }
+  canvas.addEventListener("pointerup", release);
+  canvas.addEventListener("pointercancel", release);
+
+  // Safari runs its own pinch alongside pointer events and would zoom the page.
+  document.addEventListener("gesturestart", function (e) { e.preventDefault(); });
 
   // Not passive: a trackpad pinch arrives as ctrl+wheel and would otherwise zoom the whole page.
   canvas.addEventListener("wheel", function (e) {
@@ -576,6 +709,7 @@
   form.addEventListener("submit", function (e) { e.preventDefault(); });
 
   CONFIG.deviceKeys.forEach(function (k) { form.elements[k].value = CONFIG.defaults[k]; });
+  if (touch) form.elements.res.value = CONFIG.touchRes;
   readForm();
   resize();
 

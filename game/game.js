@@ -5,6 +5,7 @@
   // Tune the feel here.
   const CONFIG = {
     pixels: 180,                  // world pixels across the short side of the screen
+    pixelsTouch: 130,             // same on phones and tablets: fewer, bigger pixels
     speedStart: 45,               // scroll speed, world px/s
     speedMax: 150,
     speedGain: 0.012,             // extra px/s per px travelled
@@ -196,15 +197,18 @@
   let dpr = 1;
   try { best = +localStorage.getItem("pixel-voyager-best") || 0; } catch (e) {}
 
+  // Size to the visible viewport (on iOS, 100vh includes the area under the toolbars).
   function resize() {
-    scale = Math.max(1, Math.round(Math.min(innerWidth, innerHeight) / CONFIG.pixels));
-    const w = Math.ceil(innerWidth / scale), h = Math.ceil(innerHeight / scale);
+    const vw = document.documentElement.clientWidth, vh = innerHeight;
+    scale = Math.max(1, Math.round(Math.min(vw, vh) / (coarse ? CONFIG.pixelsTouch : CONFIG.pixels)));
+    const w = Math.ceil(vw / scale), h = Math.ceil(vh / scale);
     cvs.style.width = w * scale + "px";
     cvs.style.height = h * scale + "px";
+    sky.style.width = vw + "px"; sky.style.height = vh + "px";
     if (w === W && h === H) return;
     W = cvs.width = w; H = cvs.height = h;
     dpr = Math.min(2, devicePixelRatio || 1);
-    sky.width = Math.round(innerWidth * dpr); sky.height = Math.round(innerHeight * dpr);
+    sky.width = Math.round(vw * dpr); sky.height = Math.round(vh * dpr);
     stars = [];
     for (let i = 0; i < (W * H) / 70; i++) {
       const l = i % 3;
@@ -836,7 +840,9 @@
   document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); else loop(); });
 
   let resizeTimer = 0;
-  addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 100); });
+  const onResize = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 100); };
+  addEventListener("resize", onResize);
+  if (window.visualViewport) visualViewport.addEventListener("resize", onResize);
 
   if (coarse) $("[data-keys]").textContent = "Drag anywhere to steer · hold FIRE with your other thumb · long-press or press hard for a power shot";
   bestEl.textContent = best;

@@ -14,7 +14,7 @@
     /* Low-res canvas scaled up by an integer factor: crisp pixels. */
     canvas { position: fixed; top: 0; left: 0; display: block; image-rendering: pixelated; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
     /* Star field: its own canvas at screen resolution behind the pixel-art game canvas. */
-    canvas.sky { width: 100vw; height: 100vh; image-rendering: auto; pointer-events: none; }
+    canvas.sky { width: 100vw; height: 100dvh; image-rendering: auto; pointer-events: none; }
     .ui { position: fixed; z-index: 1; font-size: var(--fs-sm); color: var(--color-text-muted); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
     .back, .sound, .music { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); color: var(--color-text); font: inherit; text-decoration: none; background: color-mix(in srgb, var(--color-bg) 70%, transparent); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; }
     .back { top: var(--edge-top); left: var(--edge-left); }

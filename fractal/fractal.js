@@ -19,6 +19,7 @@
     wheelZoom: 0.002,    // zoom per scrolled pixel, on a log scale: scroll up zooms in, down zooms out
     wheelEase: 14,       // per sec, how fast a scroll's zoom catches up (higher = snappier)
     tapSlop: 10,         // CSS px a press can move and still count as a tap
+    tapTime: 250,        // ms a press can last and still count as a tap; longer is a hold, which only moves
     friction: 4,         // per sec, how fast a flicked view slows down
     maxFling: 3000,      // CSS px per sec, fastest flick
     warpFadeStart: 20,   // zoom where Warp starts easing off...
@@ -314,7 +315,7 @@
 
     t += dt;
     boost *= Math.exp(-dt * 1.5);
-    logZoom += dt * CONFIG.zoomRate * S.zoom * (1 + boost);
+    if (!pointers.size) logZoom += dt * CONFIG.zoomRate * S.zoom * (1 + boost); // a held view stops diving
     angle += dt * S.spin;
     phase += dt * S.cycle;
     warpAngle += dt * S.warpSpeed;
@@ -367,7 +368,7 @@
   // this frame, then glides to the centre while the zoom carries on.
   var hintEl = document.querySelector(".hint");
   if (reduceMotion) hintEl.hidden = true; // nothing moves, so clicks don't zoom
-  else if (touch) hintEl.textContent = "Tap, drag or pinch to explore";
+  else if (touch) hintEl.textContent = "Tap to zoom, hold and drag to move, pinch to turn";
   var wheelDy = 0, wheelX = 0, wheelY = 0;
 
   // Pointer input is only recorded in the handlers and applied once per frame in applyInput().
@@ -454,7 +455,8 @@
     uploadOrbit();
   }
 
-  // Tap or click dives into a point; drag (with a flick) moves the view; pinch zooms and turns it.
+  // Tap or click dives into a point; press-hold-slide (with a flick) moves the view while the dive
+  // pauses; pinch zooms and turns it.
   canvas.addEventListener("pointerdown", function (e) {
     if (reduceMotion || e.button > 0) return;
     hintEl.hidden = true; // the hint has done its job once someone has used it
@@ -462,7 +464,7 @@
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, t: e.timeStamp, vx: 0, vy: 0 });
     velX = velY = 0; // a touch catches a flick
     multi = pointers.size > 1;
-    tap = multi ? null : { x: e.clientX, y: e.clientY };
+    tap = multi ? null : { x: e.clientX, y: e.clientY, t: e.timeStamp };
   }, { passive: true });
 
   canvas.addEventListener("pointermove", function (e) {
@@ -509,7 +511,7 @@
     if (pointers.size) return;
     canvas.classList.remove("dragging");
     if (e.type !== "pointerup") return;
-    if (tap) tapAt = { x: e.clientX, y: e.clientY };
+    if (tap && e.timeStamp - tap.t < CONFIG.tapTime) tapAt = { x: e.clientX, y: e.clientY };
     else if (!multi && e.timeStamp - p.t < 80) { // no flick if the finger stopped before lifting
       var v = Math.hypot(p.vx, p.vy), cap = v > CONFIG.maxFling ? CONFIG.maxFling / v : 1;
       velX = p.vx * cap;

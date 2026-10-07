@@ -26,15 +26,17 @@
     .hero { display: grid; gap: var(--space-7); align-items: center; padding-block-start: var(--space-6); }
     .hero h1 { font-size: var(--fs-2xl); line-height: var(--line-height-tight); letter-spacing: var(--tracking-display); margin-bottom: var(--space-4); }
     .cta { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-6); }
-    .hero__phones { display: flex; justify-content: center; align-items: center; }
-    .hero__phones .phone { width: 34%; max-width: 200px; }
-    .hero__phones .phone:nth-child(1) { transform: rotate(-6deg) translateX(14%); }
-    .hero__phones .phone:nth-child(2) { position: relative; z-index: 1; width: 38%; max-width: 220px; }
-    .hero__phones .phone:nth-child(3) { transform: rotate(6deg) translateX(-14%); }
+    .hero__demo { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); margin: 0; }
+    .hero__demo .phone { width: 72%; max-width: 300px; }
+    .hero__demo figcaption, .highlight figcaption { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--color-text-muted); }
+
+    /* Word-highlight proof strip */
+    .highlight { margin: var(--space-6) 0 0; max-width: 380px; }
+    .highlight img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--color-border); margin-bottom: var(--space-3); }
 
     /* Phone frame around a 9:16 screenshot */
     .phone { margin: 0; padding: 6px; background: #08090c; border: 1px solid var(--color-border); border-radius: 22px; box-shadow: 0 18px 40px rgb(0 0 0 / 0.45); }
-    .phone img { display: block; width: 100%; height: auto; border-radius: 16px; }
+    .phone img, .phone video { display: block; width: 100%; height: auto; border-radius: 16px; }
 
     /* Facts strip */
     .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
@@ -106,11 +108,12 @@
           <a class="button button--secondary" href="#clips">See real clips</a>
         </div>
       </div>
-      <div class="hero__phones" aria-hidden="true">
-        <figure class="phone"><img src="../assets/img/clips/drift-blue-360.webp" width="360" height="640" alt="" /></figure>
-        <figure class="phone"><img src="../assets/img/clips/face-540.webp" width="540" height="960" alt="" fetchpriority="high" /></figure>
-        <figure class="phone"><img src="../assets/img/clips/drift-pink-360.webp" width="360" height="640" alt="" /></figure>
-      </div>
+      <figure class="hero__demo">
+        <div class="phone">
+          <video class="demo-video" src="../assets/video/clips-demo-540.mp4" poster="../assets/img/clips/demo-poster.webp" width="540" height="960" muted loop playsinline controls preload="none" aria-label="A 9-second clip rendered by the pipeline from a raw selfie video: cropped to 9:16, quote on top, captions highlighted word by word"></video>
+        </div>
+        <figcaption>Unedited pipeline output. Tap for sound.</figcaption>
+      </figure>
     </section>
 
     <section aria-label="Key facts" style="padding-block-start: 0;">
@@ -162,6 +165,10 @@
     <section id="clips" aria-labelledby="clips-heading">
       <h2 id="clips-heading">Real clips, straight out of the pipeline</h2>
       <p class="lede">Unretouched frames from clips it rendered. No manual editing on any of them.</p>
+      <figure class="highlight">
+        <img src="../assets/img/clips/highlight-760.webp" srcset="../assets/img/clips/highlight-380.webp 380w, ../assets/img/clips/highlight-760.webp 760w" sizes="(min-width: 420px) 380px, 92vw" width="760" height="360" alt="The caption 'JUST BELIEVE IN' in three consecutive moments of one clip, with the yellow highlight moving from JUST to BELIEVE to IN as each word is spoken" loading="lazy" decoding="async" />
+        <figcaption>One caption line over 0.8 s: the highlight follows each spoken word.</figcaption>
+      </figure>
       <ul class="gallery">
         <li><figure class="phone"><img src="../assets/img/clips/face-360.webp" srcset="../assets/img/clips/face-360.webp 360w, ../assets/img/clips/face-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Talking-head video with a quote on top and the caption 'DO IT JUST', current word highlighted in yellow" loading="lazy" decoding="async" /></figure></li>
         <li><figure class="phone"><img src="../assets/img/clips/closeup-360.webp" srcset="../assets/img/clips/closeup-360.webp 360w, ../assets/img/clips/closeup-540.webp 540w" sizes="(min-width: 1024px) 170px, (min-width: 768px) 30vw, 45vw" width="360" height="640" alt="Close-up selfie video with the caption 'PROVIDE LEMONS'" loading="lazy" decoding="async" /></figure></li>
@@ -208,5 +215,15 @@
   <footer class="site-footer">
     <p>Eugene Shemchuk · Amsterdam · <a href="../#contact">Get in touch</a></p>
   </footer>
+  <script>
+    // Autoplay the muted demo only while on screen, never under reduced motion
+    (function () {
+      var v = document.querySelector('.demo-video');
+      if (!v || !('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      new IntersectionObserver(function (e) {
+        if (e[0].isIntersecting) { var p = v.play(); if (p) p.catch(function () {}); } else v.pause();
+      }, { threshold: 0.5 }).observe(v);
+    })();
+  </script>
 </body>
 </html>

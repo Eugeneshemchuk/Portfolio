@@ -207,30 +207,6 @@
       </div>
     </section>
 
-    <section id="clips" aria-labelledby="clips-heading">
-      <div class="container">
-        <article class="terminal clips__card">
-          <div class="terminal__bar" aria-hidden="true">
-            <span class="terminal__dot"></span>
-            <span class="terminal__dot"></span>
-            <span class="terminal__dot"></span>
-            <span class="terminal__title">~/clips</span>
-          </div>
-          <div class="terminal__body clips__body">
-            <div class="clips__text">
-              <p class="eyebrow">$ ./clips --auto</p>
-              <h2 id="clips-heading">Automated captions and video editing</h2>
-              <p>Send a video, a voice note or a line of text. Get back a finished vertical clip with word-by-word captions, voiceover and music. Runs fully on-device: no LLM calls, no per-clip cost.</p>
-              <a class="button button--primary clips__link" href="clips/">See demo</a>
-            </div>
-            <picture class="clips__visual">
-              <img src="assets/img/clips/card-960.webp" srcset="assets/img/clips/card-480.webp 480w, assets/img/clips/card-960.webp 960w" sizes="(min-width: 768px) 480px, 92vw" width="960" height="600" alt="Three vertical clips made by the pipeline: a talking-head video with highlighted captions, and two text-to-video clips over fractal backgrounds" loading="lazy" decoding="async" />
-            </picture>
-          </div>
-        </article>
-      </div>
-    </section>
-
     <section id="about" aria-labelledby="about-heading">
       <div class="container">
         <p class="eyebrow eyebrow--typed" style="--type-width:19ch; --type-steps:19;">$ whoami --verbose</p>
@@ -373,6 +349,18 @@
         <p>Smaller builds by Eugene, outside client work.</p>
         <div class="other-work__groups">
           <!-- Newest projects first: add new groups/entries at the top -->
+          <div class="other-work__group reveal" data-reveal>
+            <h3>Video automation</h3>
+            <ul class="other-work__list">
+              <li>
+                <img class="other-work__thumb" src="assets/img/work/pet-clips.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+                <div>
+                  <a class="other-work__name" href="clips/">Automated captions and video editing</a>
+                  <p class="other-work__desc">Send a video, a voice note or a line of text to a Telegram bot and get back a finished vertical clip with word-by-word captions, voiceover and music. Runs fully on-device: no LLM calls, no per-clip cost.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
           <div class="other-work__group reveal" data-reveal>
             <h3>Web graphics</h3>
             <ul class="other-work__list">

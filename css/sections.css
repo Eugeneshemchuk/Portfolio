@@ -62,7 +62,6 @@
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
   letter-spacing: var(--tracking-display);
-  animation: glitch-jolt var(--duration-glitch) steps(1, end) var(--delay-glitch) both;
 }
 
 .hero__terminal .hero__display,
@@ -80,60 +79,72 @@
   font-size: var(--fs-sm);
 }
 
-/* One-shot glitch on load: two offset colour copies flicker through
-   horizontal slices, then disappear. The real text is never hidden. */
-.hero__display::before,
-.hero__display::after {
-  content: attr(data-text);
-  content: attr(data-text) / "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  animation: var(--duration-glitch) steps(1, end) var(--delay-glitch) both;
+/* Kinetic headline on load (JS only, so no-JS shows it static).
+   Each word rises out of its own mask with a slight tilt, staggered;
+   the full stop pops in accent; one light sweep crosses "arrived".
+   Whole sequence is done in about 1.4s; text is in the HTML throughout. */
+.kin {
+  display: inline-block;
+  overflow: hidden;
+  overflow: clip;
+  vertical-align: top;
+  padding-block: 0.06em 0.12em; /* room for descenders inside the mask */
+  margin-block: -0.06em -0.12em;
 }
 
-.hero__display::before {
+.kin > span {
+  display: inline-block;
+  transform-origin: 0 100%;
+}
+
+.kin__dot {
+  display: inline-block;
   color: var(--color-accent);
-  animation-name: glitch-a;
 }
 
-.hero__display::after {
-  color: var(--color-syntax-cyan);
-  animation-name: glitch-b;
+.js .kin > span {
+  animation: kin-rise var(--duration-kin) var(--ease-kin) both;
+  animation-delay: calc(var(--delay-kin) + var(--i) * var(--stagger-kin));
 }
 
-@keyframes glitch-a {
-  0%   { opacity: 1; clip-path: inset(8% 0 78% 0);  transform: translateX(-0.0575em); }
-  15%  { opacity: 1; clip-path: inset(58% 0 22% 0); transform: translateX(0.069em); }
-  30%  { opacity: 1; clip-path: inset(30% 0 52% 0); transform: translateX(-0.046em); }
-  45%  { opacity: 1; clip-path: inset(80% 0 4% 0);  transform: translateX(0.0575em); }
-  60%  { opacity: 1; clip-path: inset(44% 0 40% 0); transform: translateX(-0.0345em); }
-  75%  { opacity: 1; clip-path: inset(15% 0 70% 0); transform: translateX(0.023em); }
-  100% { opacity: 0; clip-path: inset(0 0 100% 0);  transform: none; }
+.js .kin__dot {
+  animation: kin-pop var(--duration-kin) var(--ease-pop) both;
+  animation-delay: calc(var(--delay-kin) + 3 * var(--stagger-kin) + var(--duration-kin) * 0.4);
 }
 
-@keyframes glitch-b {
-  0%   { opacity: 1; clip-path: inset(66% 0 14% 0); transform: translateX(0.0575em); }
-  15%  { opacity: 1; clip-path: inset(12% 0 72% 0); transform: translateX(-0.069em); }
-  30%  { opacity: 1; clip-path: inset(70% 0 10% 0); transform: translateX(0.046em); }
-  45%  { opacity: 1; clip-path: inset(22% 0 60% 0); transform: translateX(-0.0575em); }
-  60%  { opacity: 1; clip-path: inset(50% 0 30% 0); transform: translateX(0.0345em); }
-  75%  { opacity: 1; clip-path: inset(85% 0 2% 0);  transform: translateX(-0.023em); }
-  100% { opacity: 0; clip-path: inset(0 0 100% 0);  transform: none; }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .js .kin > .kin__sweep {
+    background: linear-gradient(100deg, var(--color-text) 42%, var(--color-accent) 50%, var(--color-text) 58%) 100% 0 / 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation:
+      kin-rise var(--duration-kin) var(--ease-kin) both,
+      kin-sweep var(--duration-kin-sweep) var(--ease-standard) both;
+    animation-delay:
+      calc(var(--delay-kin) + var(--i) * var(--stagger-kin)),
+      calc(var(--delay-kin) + 3 * var(--stagger-kin) + var(--duration-kin) * 0.5);
+  }
 }
 
-@keyframes glitch-jolt {
-  0%   { transform: translateX(0.023em); }
-  30%  { transform: translateX(-0.023em) skewX(-4.6deg); }
-  60%  { transform: translateX(0.0115em); }
-  100% { transform: none; }
+@keyframes kin-rise {
+  from { transform: translateY(110%) rotate(6deg); }
+  to   { transform: none; }
+}
+
+@keyframes kin-pop {
+  from { transform: scale(0); }
+  to   { transform: none; }
+}
+
+@keyframes kin-sweep {
+  from { background-position: 100% 0; }
+  to   { background-position: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__display,
-  .hero__display::before,
-  .hero__display::after {
+  .js .kin > span,
+  .js .kin__dot {
     animation: none;
   }
 }

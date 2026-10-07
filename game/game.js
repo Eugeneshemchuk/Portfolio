@@ -15,6 +15,12 @@
     dragGain: 1.4,                // touch: ship moves this many px per px the finger drags
     laserSpeed: 260,              // px/s
     planetHits: 150,              // laser damage to break a planet
+    moonHits: [6, 12],            // planet satellites
+    sunHits: 1000,                // suns: break one for a huge haul
+    sunsFrom: 1500,               // px travelled before suns appear
+    burnRange: 22,                // px beyond a sun's surface where the ship heats up
+    heatRate: 0.9,                // heat per second at the surface (1 = burnt), less further out
+    coolRate: 0.35,
     chargeTime: 0.9,              // seconds holding fire for a power shot
     powerDamage: 30,              // power shot damage, times the laser damage
     forcePressure: 0.75,          // touch pressure that charges a power shot instantly
@@ -26,7 +32,7 @@
       { r: 5.5, hits: [5, 7], drift: 0.7, ore: ["mineral", "mineral", "crystal"], w: [1, 3] },
       { r: 8, hits: [8, 10], drift: 0.55, ore: ["mineral", "crystal", "crystal", "crystal"], w: [0, 2] },
     ],
-    ore: { mineral: 1, crystal: 3 }, // xp per piece
+    ore: { mineral: 1, gas: 2, crystal: 3 }, // xp per piece
     // Levels: xp needed, guns as [x offset, sideways speed], damage per hit, volleys/s, speed factor, ship size tier
     levels: [
       { xp: 0, guns: [[-3, 0], [3, 0]], dmg: 1, rate: 12, speed: 1, tier: 0, perk: "" },
@@ -44,16 +50,20 @@
     gapEnd: 30,                   // ...and at full difficulty
     fullDifficultyAt: 8000,       // px travelled
     blackHolesFrom: 600,          // px travelled before black holes appear
-    points: { dust: 25, rock: 10, planet: 500 },
+    points: { dust: 25, rock: 10, planet: 500, sun: 3000 },
     colors: {
       bg: "#0b0c0f",
-      stars: ["#2a2e36", "#5a606c", "#f4f5f7"],
+      stars: ["#f4f5f7", "#cfe3ff", "#9ec5ff", "#ffe9b0", "#ffc38a", "#ff9a8a"], // white, blue, yellow, orange, red
       ship: { b: "#9aa0ac", w: "#f4f5f7", c: "#5eb1ff" },
       lasers: ["#ff6ac1", "#56d4dd", "#7ee787"], // by damage 1, 2, 3
       flame: ["#ffa657", "#e3b341", "#ff5f57"],
       rock: ["#3a3e48", "#6b717d", "#a0a6b2"],
       mineral: { a: "#e3b341", o: "#ffa657" },
-      crystal: { c: "#56d4dd", p: "#c792ea", w: "#f4f5f7" },
+      crystal: { c: "#56d4dd", w: "#f4f5f7" },
+      gas: { g: "#6b4fb3", G: "#c792ea" },
+      heat: "#ff5f57",
+      moons: [["#3a3e48", "#6b717d", "#a0a6b2"], ["#3d2a12", "#a8742c", "#e3b341"], ["#1d3557", "#3a6ea5", "#9ec5ff"]],
+      suns: [["#ffa657", "#e3b341", "#fff6dc"], ["#a8321e", "#ff5f57", "#ffa657"], ["#3a6ea5", "#5eb1ff", "#f4f5f7"]],
       dust: { y: "#7ee787", w: "#f4f5f7" },
       xp: "#e3b341",
       disk: ["#ffa657", "#e3b341", "#f4f5f7", "#ff6ac1"],
@@ -97,7 +107,8 @@
   ];
   const SHIP_R = [2, 2.5, 3]; // hit radius per size
   const DUST = sprite([".w.", "wyw", ".w."], C.dust);
-  const ORE = { mineral: sprite(["ao", "oa"], C.mineral), crystal: sprite([".c.", "cwp", ".p."], C.crystal) };
+  const ORE = { mineral: sprite(["ao", "oa"], C.mineral), crystal: sprite([".c.", "cwc", ".c."], C.crystal),
+    gas: sprite([".g.", "gGg", ".gG"], C.gas) };
 
   const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const dither = (t, x, y, n) => Math.max(0, Math.min(n - 1, Math.floor(t * n + BAYER[(y & 3) * 4 + (x & 3)] / 16 - 0.5)));
@@ -140,12 +151,27 @@
     return c;
   }
 
+  // Sun: bright disk, white-hot centre fading to a darker limb.
+  function sunImg(r, ramp) {
+    const d = r * 2 + 1, c = document.createElement("canvas");
+    c.width = c.height = d;
+    const g = c.getContext("2d");
+    for (let y = 0; y < d; y++) for (let x = 0; x < d; x++) {
+      const dx = (x - r) / r, dy = (y - r) / r, q = dx * dx + dy * dy;
+      if (q > 1 + 0.8 / r) continue;
+      g.fillStyle = ramp[dither(Math.sqrt(Math.max(0, 1 - q)) * 1.15, x, y, 3)];
+      g.fillRect(x, y, 1, 1);
+    }
+    return c;
+  }
+
   // --- State ---
   let W = 0, H = 0, scale = 1;
   let stars = [], things = [], bits = [], shots = [];
   let state = "title", clock = 0, dist = 0, bonus = 0, speed = 0, nextSpawn = 0, overTimer = 0, milestone = 0, reload = 0;
   let lvl = 1, xp = 0, held = 0, charge = 0, toastTimer = 0;
-  const ship = { x: 0, y: 0, vx: 0, vy: 0, alive: true };
+  const ship = { x: 0, y: 0, vx: 0, vy: 0, heat: 0, alive: true };
+  let msgOver = "";
   const keys = new Set();
   let target = null, pointerFire = false, buttonFire = false, best = 0;
   const drag = { x: 0, y: 0 };
@@ -153,6 +179,11 @@
   const shipImg = () => SHIPS[L().tier];
   const fireBtn = $(".fire"), toastEl = $("[data-toast]"), levelEl = $("[data-level]");
   const coarse = matchMedia("(pointer: coarse)").matches;
+  const sky = document.createElement("canvas"), sctx = sky.getContext("2d");
+  sky.className = "sky";
+  sky.setAttribute("aria-hidden", "true");
+  cvs.before(sky);
+  let dpr = 1;
   try { best = +localStorage.getItem("pixel-voyager-best") || 0; } catch (e) {}
 
   function resize() {
@@ -162,8 +193,13 @@
     cvs.style.height = h * scale + "px";
     if (w === W && h === H) return;
     W = cvs.width = w; H = cvs.height = h;
+    dpr = Math.min(2, devicePixelRatio || 1);
+    sky.width = Math.round(innerWidth * dpr); sky.height = Math.round(innerHeight * dpr);
     stars = [];
-    for (let i = 0; i < (W * H) / 90; i++) stars.push({ x: rnd(0, W), y: rnd(0, H), l: i % 3 });
+    for (let i = 0; i < (W * H) / 70; i++) {
+      const l = i % 3;
+      stars.push({ x: rnd(0, W), y: rnd(0, H), l, c: C.stars[(Math.random() ** 2 * C.stars.length) | 0], tw: rnd(1.5, 5), big: l === 2 && Math.random() < 0.12 });
+    }
     if (state !== "play") { ship.x = W / 2; ship.y = H * 0.8; }
     ship.x = Math.min(ship.x, W - 4);
     ship.y = Math.min(ship.y, H - 6);
@@ -175,13 +211,25 @@
     const k = Math.min(1, dist / CONFIG.fullDifficultyAt);
     nextSpawn = dist + CONFIG.gapStart + (CONFIG.gapEnd - CONFIG.gapStart) * k + rnd(0, 30);
     const roll = Math.random();
-    if (roll < 0.12 && dist > CONFIG.blackHolesFrom) {
+    if (roll < 0.05 && dist > CONFIG.sunsFrom) {
+      const r = Math.round(rnd(9, 14)), ramp = C.suns[(Math.random() * C.suns.length) | 0];
+      things.push({ kind: "sun", x: rnd(r, W - r), y: -r - CONFIG.burnRange, r, ramp, hp: CONFIG.sunHits, max: CONFIG.sunHits, hit: 0, drift: 0.32, img: sunImg(r, ramp) });
+    } else if (roll < 0.12 && dist > CONFIG.blackHolesFrom) {
       const r = Math.round(rnd(4, 7));
       things.push({ kind: "hole", x: rnd(r + 10, W - r - 10), y: -30, r, a: rnd(0, 6) });
     } else if (roll < 0.4) {
       const r = Math.round(rnd(6, Math.max(8, Math.min(24, W / 5))));
       const ramp = C.planets[(Math.random() * C.planets.length) | 0];
-      things.push({ kind: "planet", x: rnd(-r / 2, W + r / 2), y: -r - 2, r, ramp, hp: CONFIG.planetHits, hit: 0, img: planet(r, ramp, Math.random() < 0.4) });
+      const p = { kind: "planet", x: rnd(-r / 2, W + r / 2), y: -r - 2, r, ramp, hp: CONFIG.planetHits, max: CONFIG.planetHits, hit: 0, img: planet(r, ramp, Math.random() < 0.4) };
+      things.push(p);
+      // Satellites: small moons on tilted orbits, shootable for a mineral each.
+      const moons = Math.random() < 0.65 ? 1 + ((Math.random() * Math.min(3, r / 5)) | 0) : 0;
+      for (let i = 0; i < moons; i++) {
+        const mr = Math.round(rnd(2, 3)), hp = Math.round(rnd(...CONFIG.moonHits)), mramp = C.moons[(Math.random() * C.moons.length) | 0];
+        const dir = Math.random() < 0.5 ? -1 : 1;
+        things.push({ kind: "rock", r: mr, size: mr, x: p.x, y: p.y, vx: 0, drift: CONFIG.planetDrift, hp, max: hp, hit: 0, ore: ["mineral"], img: planet(mr, mramp, false),
+          moon: { p, a: rnd(0, 6.28), d: r + 5 + i * 5 + rnd(0, 3), w: dir * rnd(0.6, 1.2) / (1 + i * 0.4) } });
+      }
     } else if (roll < 0.58) {
       const x0 = rnd(12, W - 12), n = 3 + ((Math.random() * 3) | 0);
       for (let i = 0; i < n; i++) things.push({ kind: "dust", x: x0 + Math.sin(i * 0.9) * 6, y: -4 - i * 9, r: 4 });
@@ -197,23 +245,29 @@
   }
 
   // Ore flies out of a broken asteroid, then drifts towards the ship once it's close.
-  function dropOre(t) {
+  function dropOre(t, spread = 1) {
     for (const kind of t.ore) {
-      const a = rnd(0, 6.28), s = rnd(20, 45);
-      things.push({ kind: "ore", ore: kind, x: t.x, y: t.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: 2, drift: 0.5 });
+      const a = rnd(0, 6.28), s = rnd(20, 45) * spread, o = rnd(0, t.r * 0.6);
+      things.push({ kind: "ore", ore: kind, x: t.x + Math.cos(a) * o, y: t.y + Math.sin(a) * o, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: 2, drift: 0.5 });
     }
   }
+  const haul = (n) => Object.entries(n).flatMap(([k, v]) => Array(Math.round(v)).fill(k));
 
   function damage(t, n, sx, sy) {
     t.hp -= n;
     t.hit = 0.05;
-    if (t.kind === "planet") {
+    if (t.kind === "planet" || t.kind === "sun") {
       burst(sx, sy, 2, [C.lasers[L().dmg - 1], t.ramp[2]], 30);
       if (t.hp > 0) return;
       t.gone = true;
-      bonus += CONFIG.points.planet;
-      burst(t.x, t.y, 40 + t.r * 4, [...t.ramp, C.flame[0], C.ship.w], 30 + t.r * 3);
-      beep(200, 20, 0.8, "sawtooth", 0.06);
+      const sun = t.kind === "sun";
+      bonus += CONFIG.points[t.kind];
+      burst(t.x, t.y, (sun ? 120 : 40) + t.r * 4, [...t.ramp, C.flame[0], C.ship.w], 30 + t.r * 3);
+      // A broken planet spills minerals and gas; a sun spills everything, crystals included.
+      t.ore = sun ? haul({ mineral: 8, gas: 8, crystal: 6 }) : haul({ mineral: t.r / 3, gas: t.r / 4, crystal: t.r > 16 ? 1 : 0 });
+      dropOre(t, sun ? 2 : 1.4);
+      if (sun) toast("SUN DOWN · +" + CONFIG.points.sun);
+      beep(sun ? 90 : 200, 20, sun ? 1.4 : 0.8, "sawtooth", 0.07);
       return;
     }
     if (t.hp > 0) { burst(sx, sy, 2, C.rock, 25); beep(900, 500, 0.03, "square", 0.01); return; }
@@ -294,7 +348,8 @@
       things = []; bits = []; shots = []; dist = 0; bonus = 0; milestone = 0; reload = 0;
       lvl = 1; xp = 0; held = 0; charge = 0; levelEl.textContent = 1;
       speed = CONFIG.speedStart; nextSpawn = 60;
-      Object.assign(ship, { x: W / 2, y: H * 0.8, vx: 0, vy: 0, alive: true });
+      Object.assign(ship, { x: W / 2, y: H * 0.8, vx: 0, vy: 0, heat: 0, alive: true });
+      msgOver = "";
       beep(220, 880, 0.25);
     }
     state = "play";
@@ -342,12 +397,12 @@
     bits = bits.filter((b) => b.life > 0);
 
     if (state === "over") {
-      for (const t of things) t.y += flow * (t.kind === "planet" ? CONFIG.planetDrift : 1) * dt;
+      for (const t of things) t.y += flow * (t.drift || (t.kind === "planet" ? CONFIG.planetDrift : 1)) * dt;
       if ((overTimer -= dt) <= 0 && screen.hidden) {
         const s = score(), record = s > best;
         if (record) { best = s; try { localStorage.setItem("pixel-voyager-best", s); } catch (e) {} }
         bestEl.textContent = best;
-        setScreen("GAME OVER", (record ? "New best: " : "Score: ") + s + ". Again?", "Fly again");
+        setScreen("GAME OVER", (msgOver ? msgOver + " " : "") + (record ? "New best: " : "Score: ") + s + ". Again?", "Fly again");
         startBtn.focus();
       }
       return;
@@ -407,7 +462,7 @@
           if (s.power) { if (!s.hits.has(t)) { s.hits.add(t); damage(t, s.dmg, s.x, s.y); } continue; }
           s.gone = true;
           damage(t, s.dmg, s.x, s.y);
-        } else if (t.kind === "planet" && d < t.r) {
+        } else if ((t.kind === "planet" || t.kind === "sun") && d < t.r) {
           s.gone = true;
           damage(t, s.dmg, s.x, s.y);
         } else if (t.kind === "hole" && d < t.r + 3) {
@@ -419,10 +474,20 @@
     shots = shots.filter((s) => !s.gone && s.y > -8 && s.x > -4 && s.x < W + 4);
 
     const shipR = SHIP_R[lv.tier];
+    let heating = 0;
     for (const t of things) {
       if (t.gone) continue;
       t.y += speed * (t.drift || (t.kind === "planet" ? CONFIG.planetDrift : 1)) * dt;
-      if (t.kind === "rock") { t.x += t.vx * dt; if (t.x < 2 || t.x > W - 2) t.vx = -t.vx; }
+      const m = t.moon;
+      if (m && (m.p.gone || m.p.y > H + 40)) {
+        // Planet broken: the moon flies off along its orbit.
+        t.vx = -Math.sin(m.a) * m.w * m.d;
+        t.moon = null;
+      } else if (m) {
+        m.a += m.w * dt;
+        t.x = m.p.x + Math.cos(m.a) * m.d;
+        t.y = m.p.y + Math.sin(m.a) * m.d * 0.45;
+      } else if (t.kind === "rock") { t.x += t.vx * dt; if (t.x < 2 || t.x > W - 2) t.vx = -t.vx; }
       if (t.hit > 0) t.hit -= dt;
       const dx = t.x - ship.x, dy = t.y - ship.y, d2 = dx * dx + dy * dy, d = Math.sqrt(d2);
       if (t.kind === "hole" && d < CONFIG.gravityRange) {
@@ -430,6 +495,7 @@
         ship.vx += (dx / d) * f * dt;
         ship.vy += (dy / d) * f * dt;
       }
+      if (t.kind === "sun" && d < t.r + CONFIG.burnRange) heating = Math.max(heating, 1 - (d - t.r) / CONFIG.burnRange);
       if (t.kind === "ore") {
         if (d < CONFIG.magnet) { t.vx = (-dx / d) * 120; t.vy = (-dy / d) * 120 - speed * t.drift; }
         else { t.vx *= 1 - 3 * dt; t.vy *= 1 - 3 * dt; }
@@ -444,6 +510,11 @@
     }
     things = things.filter((t) => !t.gone && t.y < H + 40);
 
+    // Suns cook the ship: heat climbs faster the closer you are, and cools off once you're clear.
+    ship.heat = Math.max(0, ship.heat + (heating > 0 ? CONFIG.heatRate * (0.3 + heating) : -CONFIG.coolRate) * dt);
+    if (heating > 0 && Math.random() < dt * 8) beep(120, 90, 0.05, "sawtooth", 0.015);
+    if (ship.heat >= 1) { msgOver = "Burnt up by a sun."; crash(); return; }
+
     const half = shipImg().width >> 1;
     ship.x = Math.max(half, Math.min(W - half, ship.x + ship.vx * dt));
     ship.y = Math.max(H * 0.35, Math.min(H - (shipImg().height >> 1) - 1, ship.y + ship.vy * dt));
@@ -457,14 +528,17 @@
 
   // --- Draw ---
   function draw() {
-    ctx.fillStyle = C.bg;
-    ctx.fillRect(0, 0, W, H);
-    for (const s of stars) { ctx.fillStyle = C.stars[s.l]; ctx.fillRect(s.x | 0, s.y | 0, 1, 1); }
+    drawSky();
+    ctx.clearRect(0, 0, W, H);
 
+    // Moons on the far side of their orbit pass behind the planet.
+    const behind = (t) => t.moon && Math.sin(t.moon.a) < 0;
+    for (const t of things) if (behind(t)) drawRock(t, Math.round(t.x), Math.round(t.y));
     for (const t of things) {
       const x = Math.round(t.x), y = Math.round(t.y);
       if (t.kind === "planet") drawPlanet(t, x, y);
-      else if (t.kind === "rock") drawRock(t, x, y);
+      else if (t.kind === "sun") drawSun(t, x, y);
+      else if (t.kind === "rock") { if (!behind(t)) drawRock(t, x, y); }
       else if (t.kind === "ore") ctx.drawImage(ORE[t.ore], x - 1, y - 1);
       else if (t.kind === "dust") { if ((clock * 6 + t.y) % 4 > 0.6) ctx.drawImage(DUST, x - 1, y - 1); }
       else drawHole(t, x, y);
@@ -491,10 +565,19 @@
         ctx.fillStyle = C.flame[(clock * 15 | 0) % 3];
         ctx.fillRect(x + (img.width >> 1), y + img.height - 1, 1, n);
       }
+      // Heat: the hull flickers red and a bar under the ship fills towards burning up.
+      if (ship.heat > 0.02) {
+        ctx.fillStyle = C.heat;
+        for (let i = 0; i < ship.heat * 10; i++) ctx.fillRect(x + ((Math.random() * img.width) | 0), y + ((Math.random() * img.height) | 0), 1, 1);
+        ctx.fillStyle = C.horizon;
+        ctx.fillRect(x, y + img.height + 2, img.width, 1);
+        ctx.fillStyle = C.heat;
+        ctx.fillRect(x, y + img.height + 2, Math.ceil(img.width * ship.heat), 1);
+      }
       // Charge ring: fills clockwise while fire is held, blinks when the power shot is ready.
       if (charge > 0.08 && (charge < 1 || (clock * 12 | 0) & 1)) {
         const rr = (img.width >> 1) + 3, n = Math.floor(charge * 16);
-        ctx.fillStyle = charge < 1 ? C.crystal.p : C.crystal.c;
+        ctx.fillStyle = charge < 1 ? C.gas.G : C.crystal.c;
         for (let i = 0; i < n; i++) {
           const a = -Math.PI / 2 + (i / 16) * 6.283;
           ctx.fillRect(Math.round(ship.x + Math.cos(a) * rr), Math.round(ship.y + Math.sin(a) * rr), 1, 1);
@@ -533,7 +616,47 @@
   function drawPlanet(t, x, y) {
     const j = t.hit > 0 ? (clock * 60 & 1 ? 1 : -1) : 0;
     ctx.drawImage(t.img, x - t.r + j, y - t.r);
-    if (t.hp < CONFIG.planetHits) drawBar(x, y, t.r, t.hp, CONFIG.planetHits);
+    if (t.hp < t.max) drawBar(x, y, t.r, t.hp, t.max);
+  }
+
+  // Sun: flickering corona and a shimmering heat ring where it starts to burn.
+  function drawSun(t, x, y) {
+    const j = t.hit > 0 ? (clock * 60 & 1 ? 1 : -1) : 0;
+    const hr = t.r + CONFIG.burnRange;
+    ctx.fillStyle = C.heat;
+    for (let i = 0; i < 40; i++) {
+      if (Math.random() < 0.5) continue;
+      const a = i * 0.157 + clock * 0.4;
+      ctx.fillRect(Math.round(x + Math.cos(a) * hr), Math.round(y + Math.sin(a) * hr), 1, 1);
+    }
+    for (let i = 0; i < 36; i++) {
+      const a = rnd(0, 6.28), rr = t.r + rnd(0.5, 4) * (0.7 + 0.3 * Math.sin(clock * 5 + i));
+      ctx.fillStyle = t.ramp[i % 3];
+      ctx.fillRect(Math.round(x + Math.cos(a) * rr), Math.round(y + Math.sin(a) * rr), 1, 1);
+    }
+    ctx.drawImage(t.img, x - t.r + j, y - t.r);
+    if (t.hp < t.max) drawBar(x, y, t.r, t.hp, t.max);
+  }
+
+  // Sky on its own canvas at screen resolution: fine coloured stars, the bright ones twinkle with a cross.
+  function drawSky() {
+    const k = scale * dpr, p = Math.max(1, Math.round(dpr));
+    sctx.globalAlpha = 1;
+    sctx.fillStyle = C.bg;
+    sctx.fillRect(0, 0, sky.width, sky.height);
+    for (const s of stars) {
+      const a = s.l === 2 ? 0.75 + 0.25 * Math.sin(clock * s.tw + s.x) : s.l ? 0.65 : 0.4;
+      const x = Math.round(s.x * k), y = Math.round(s.y * k);
+      sctx.globalAlpha = a;
+      sctx.fillStyle = s.c;
+      sctx.fillRect(x, y, p, p);
+      if (s.big) {
+        sctx.globalAlpha = a * 0.45;
+        sctx.fillRect(x - 2 * p, y, 5 * p, p);
+        sctx.fillRect(x, y - 2 * p, p, 5 * p);
+      }
+    }
+    sctx.globalAlpha = 1;
   }
 
   // Black hole: tilted accretion disk, back half behind the horizon, front half over it.

@@ -31,7 +31,33 @@
     funTapTime: 0.2,      // sec, a press shorter than this adds a node instead of bursting
     maxNodes: 120,        // hard cap; adding past it recycles the oldest node
     calmFadeIn: 900,      // ms, fresh calm network fading in after fun is switched off
-    colorRing: "126, 231, 135" // --color-syntax-green as rgb
+    colorRing: "126, 231, 135", // --color-syntax-green as rgb
+
+    // Foreground depth layer: soft, larger particles in front of the network.
+    // Each gets a depth z (0..1); nearer ones are bigger, brighter, faster and shift more with the cursor.
+    fgCountMin: 10,
+    fgCountMax: 24,
+    fgRadiusMin: 1.5,     // px, farthest particle
+    fgRadiusMax: 6,       // px, nearest particle
+    fgAlphaMin: 0.1,
+    fgAlphaMax: 0.32,
+    fgSpeed: 7,           // px/sec drift at z = 1
+    colorParticle: "120, 190, 255",
+
+    // Camera: every node and particle sits at a depth. Moving the camera shifts each one by
+    // its depth's amount (px at full cursor offset), so near and far slide apart like a real POV move.
+    // Positive follows the cursor, negative goes against it; the gradient between them is the depth.
+    camShiftNetNear: 45,  // px, nearest network nodes
+    camShiftNetFar: -35,  // px, farthest network nodes
+    camShiftFgMin: 70,    // px, farthest foreground particle
+    camShiftFgMax: 170,   // px, nearest foreground particle
+    camEase: 2.5,         // per sec, how smoothly the camera follows the cursor
+    camSway: 0.22,        // 0..1, slow automatic camera drift (also on touch); 0 turns it off
+    camSwayPeriod: 26,    // sec per sway cycle
+    linkDepth: 140,       // px, depth gap counted into link distance, so links stay within nearby depths
+    farDim: 0.4,          // brightness of the farthest nodes and links, relative to the nearest
+    farSize: 0.55,        // size of the farthest nodes, relative to the nearest
+    farSpeed: 0.5         // drift speed of the farthest nodes, relative to the nearest
   };
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,6 +67,9 @@
   var height = 0;
   var dpr = 1;
   var nodes = [];
+  var particles = [];
+  var cam = { x: 0, y: 0, t: 0 }; // eased camera offset, -1..1 on each axis
+  var sprite = null;
   var grid = {};
   var cellSize = CONFIG.linkDistance;
 
@@ -67,15 +96,24 @@
     return Math.round(lerp(CONFIG.nodeCountMin, CONFIG.nodeCountMax, t));
   }
 
-  function makeNode(x, y) {
+  // t: depth, 0 nearest .. 1 farthest. x/y are the rest position; the camera shift is added on draw.
+  function makeNode(x, y, t) {
+    if (t === undefined) t = Math.random();
     var angle = Math.random() * Math.PI * 2;
+    var speed = CONFIG.driftSpeed * lerp(1, CONFIG.farSpeed, t);
+    var shift = lerp(CONFIG.camShiftNetNear, CONFIG.camShiftNetFar, t);
     return {
       x: x,
       y: y,
-      vx: Math.cos(angle) * CONFIG.driftSpeed,
-      vy: Math.sin(angle) * CONFIG.driftSpeed,
-      bvx: Math.cos(angle) * CONFIG.driftSpeed,
-      bvy: Math.sin(angle) * CONFIG.driftSpeed,
+      t: t,
+      shift: shift,
+      margin: Math.abs(shift) + 10, // roams this far past the edges so a camera move never shows a bare strip
+      px: x,
+      py: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      bvx: Math.cos(angle) * speed,
+      bvy: Math.sin(angle) * speed,
       pop: 0
     };
   }
@@ -84,7 +122,86 @@
     var count = nodeCountForArea(w * h);
     nodes = [];
     for (var i = 0; i < count; i++) {
-      nodes.push(makeNode(Math.random() * w, Math.random() * h));
+      var t = Math.random();
+      var m = Math.abs(lerp(CONFIG.camShiftNetNear, CONFIG.camShiftNetFar, t)) + 10;
+      nodes.push(makeNode(lerp(-m, w + m, Math.random()), lerp(-m, h + m, Math.random()), t));
+    }
+  }
+
+  function initParticles(w, h) {
+    var t = clamp((w * h - CONFIG.areaMin) / (CONFIG.areaMax - CONFIG.areaMin), 0, 1);
+    var count = Math.round(lerp(CONFIG.fgCountMin, CONFIG.fgCountMax, t));
+    particles = [];
+    for (var i = 0; i < count; i++) {
+      var z = Math.random();
+      var angle = Math.random() * Math.PI * 2;
+      var speed = CONFIG.fgSpeed * (0.4 + 0.6 * z);
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        z: z,
+        shift: lerp(CONFIG.camShiftFgMin, CONFIG.camShiftFgMax, z),
+        r: lerp(CONFIG.fgRadiusMin, CONFIG.fgRadiusMax, z),
+        a: lerp(CONFIG.fgAlphaMin, CONFIG.fgAlphaMax, z)
+      });
+    }
+  }
+
+  // One pre-rendered soft blob, drawn scaled per particle: cheaper than a gradient per frame
+  function makeSprite() {
+    var size = 64;
+    var c = document.createElement("canvas");
+    c.width = c.height = size;
+    var g = c.getContext("2d");
+    var grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    grad.addColorStop(0, "rgba(" + CONFIG.colorParticle + ", 1)");
+    grad.addColorStop(0.35, "rgba(" + CONFIG.colorParticle + ", 0.55)");
+    grad.addColorStop(1, "rgba(" + CONFIG.colorParticle + ", 0)");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, size, size);
+    return c;
+  }
+
+  // Camera target = cursor offset from centre (-1..1) plus a slow sway, eased
+  function stepCamera(dt) {
+    cam.t += dt;
+    var w = cam.t * Math.PI * 2 / CONFIG.camSwayPeriod;
+    var tx = Math.sin(w) * CONFIG.camSway;
+    var ty = Math.sin(w * 0.7 + 1) * CONFIG.camSway * 0.6;
+    if (pointer.active) {
+      tx += clamp((pointer.x - width / 2) / (width / 2), -1, 1);
+      ty += clamp((pointer.y - height / 2) / (height / 2), -1, 1);
+    }
+    var e = Math.min(CONFIG.camEase * dt, 1);
+    cam.x += (tx - cam.x) * e;
+    cam.y += (ty - cam.y) * e;
+  }
+
+  function stepParticles(dt) {
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      // Wrap with a margin so particles slide in and out of frame instead of popping
+      var m = p.r * 3 + 40;
+      if (p.x < -m) p.x += width + 2 * m;
+      else if (p.x > width + m) p.x -= width + 2 * m;
+      if (p.y < -m) p.y += height + 2 * m;
+      else if (p.y > height + m) p.y -= height + 2 * m;
+    }
+  }
+
+  function drawParticles(fade) {
+    if (!sprite) sprite = makeSprite();
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      var d = p.r * 3; // sprite fades to nothing at its edge, so draw it wider than the core
+      var x = p.x + cam.x * p.shift;
+      var y = p.y + cam.y * p.shift;
+      ctx.globalAlpha = p.a * fade;
+      ctx.drawImage(sprite, x - d, y - d, d * 2, d * 2);
     }
   }
 
@@ -104,6 +221,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     initNodes(w, h);
+    initParticles(w, h);
   }
 
   function cellKey(cx, cy) {
@@ -127,7 +245,9 @@
 
     var burst = 0;
     if (pointer.released && pointer.charge < CONFIG.funTapTime) {
-      var added = makeNode(pointer.x, pointer.y);
+      var added = makeNode(0, 0);
+      added.x = pointer.x - cam.x * added.shift;
+      added.y = pointer.y - cam.y * added.shift;
       added.pop = 1;
       if (nodes.length >= CONFIG.maxNodes) nodes.shift();
       nodes.push(added);
@@ -150,8 +270,8 @@
       n.vy += (n.bvy - n.vy) * settle;
 
       if (!pull && !burst) continue;
-      var dx = pointer.x - n.x;
-      var dy = pointer.y - n.y;
+      var dx = pointer.x - (n.x + cam.x * n.shift);
+      var dy = pointer.y - (n.y + cam.y * n.shift);
       var dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < 1 || dist > CONFIG.funRadius) continue;
 
@@ -169,6 +289,8 @@
   }
 
   function step(dt) {
+    stepCamera(dt);
+    stepParticles(dt);
     if (fun) funForces(dt);
 
     for (var i = 0; i < nodes.length; i++) {
@@ -176,14 +298,15 @@
       n.x += n.vx * dt;
       n.y += n.vy * dt;
 
-      if (n.x < 0) { n.x = 0; n.vx = -n.vx; }
-      else if (n.x > width) { n.x = width; n.vx = -n.vx; }
-      if (n.y < 0) { n.y = 0; n.vy = -n.vy; }
-      else if (n.y > height) { n.y = height; n.vy = -n.vy; }
+      var m = n.margin;
+      if (n.x < -m) { n.x = -m; n.vx = -n.vx; }
+      else if (n.x > width + m) { n.x = width + m; n.vx = -n.vx; }
+      if (n.y < -m) { n.y = -m; n.vy = -n.vy; }
+      else if (n.y > height + m) { n.y = height + m; n.vy = -n.vy; }
 
       if (pointer.active && !fun) {
-        var dx = n.x - pointer.x;
-        var dy = n.y - pointer.y;
+        var dx = n.x + cam.x * n.shift - pointer.x;
+        var dy = n.y + cam.y * n.shift - pointer.y;
         var dist = Math.sqrt(dx * dx + dy * dy);
         if (dist > 0 && dist < CONFIG.cursorRadius) {
           var force = (1 - dist / CONFIG.cursorRadius) * CONFIG.cursorForce;
@@ -196,12 +319,17 @@
 
   function draw() {
     ctx.clearRect(0, 0, width, height);
+    var fade = 1;
     if (fadeInFrom) {
-      var fade = Math.min((performance.now() - fadeInFrom) / CONFIG.calmFadeIn, 1);
+      fade = Math.min((performance.now() - fadeInFrom) / CONFIG.calmFadeIn, 1);
       ctx.globalAlpha = fade;
       if (fade === 1) fadeInFrom = 0;
     }
     buildGrid();
+    for (var q = 0; q < nodes.length; q++) {
+      nodes[q].px = nodes[q].x + cam.x * nodes[q].shift;
+      nodes[q].py = nodes[q].y + cam.y * nodes[q].shift;
+    }
 
     ctx.lineWidth = 1;
 
@@ -229,14 +357,15 @@
             var b = nodes[j];
             var dx = a.x - b.x;
             var dy = a.y - b.y;
-            var dist = Math.sqrt(dx * dx + dy * dy);
+            var dz = (a.t - b.t) * CONFIG.linkDepth;
+            var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
             if (dist < CONFIG.linkDistance) {
-              var opacity = (1 - dist / CONFIG.linkDistance) * 0.5;
+              var opacity = (1 - dist / CONFIG.linkDistance) * 0.5 * lerp(1, CONFIG.farDim, (a.t + b.t) / 2);
               ctx.strokeStyle = "rgba(" + CONFIG.colorLine + ", " + opacity + ")";
               ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
+              ctx.moveTo(a.px, a.py);
+              ctx.lineTo(b.px, b.py);
               ctx.stroke();
             }
           }
@@ -244,24 +373,26 @@
       }
 
       if (pointer.active) {
-        var pdx = a.x - pointer.x;
-        var pdy = a.y - pointer.y;
+        var pdx = a.px - pointer.x;
+        var pdy = a.py - pointer.y;
         var pdist = Math.sqrt(pdx * pdx + pdy * pdy);
         if (pdist < CONFIG.cursorRadius) {
-          var pOpacity = (1 - pdist / CONFIG.cursorRadius) * 0.8;
+          var pOpacity = (1 - pdist / CONFIG.cursorRadius) * 0.8 * lerp(1, CONFIG.farDim, a.t);
           ctx.strokeStyle = "rgba(" + CONFIG.colorCursorLine + ", " + pOpacity + ")";
           ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
+          ctx.moveTo(a.px, a.py);
           ctx.lineTo(pointer.x, pointer.y);
           ctx.stroke();
         }
       }
 
-      ctx.fillStyle = "rgba(" + CONFIG.colorNode + ", 0.9)";
+      ctx.fillStyle = "rgba(" + CONFIG.colorNode + ", " + 0.95 * lerp(1, CONFIG.farDim, a.t) + ")";
       ctx.beginPath();
-      ctx.arc(a.x, a.y, CONFIG.nodeRadius * (1 + 3 * a.pop), 0, Math.PI * 2);
+      ctx.arc(a.px, a.py, CONFIG.nodeRadius * lerp(1.3, CONFIG.farSize, a.t) * (1 + 3 * a.pop), 0, Math.PI * 2);
       ctx.fill();
     }
+
+    drawParticles(fade);
     ctx.globalAlpha = 1;
   }
 

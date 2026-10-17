@@ -23,12 +23,25 @@
 }
 
 .hero__content {
+  position: relative;
+  z-index: 0;
   max-width: var(--content-max-width);
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
 
-.hero__canvas {
+/* Feathered scrim so the text stays legible over the animation; no hard edges */
+.hero__content::before {
+  content: "";
+  position: absolute;
+  inset: -15% -10%;
+  z-index: -1;
+  background: radial-gradient(ellipse 60% 55% at 35% 50%, var(--hero-scrim) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+.hero__canvas,
+.hero__hash {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -37,9 +50,20 @@
 }
 
 /* Text fills the hero on small screens, so the network sits further back */
+/* Hero theme, set by hash.js: only the active animation's canvas is shown */
+.terminal__body:not([data-hero-theme="network"]) .hero__canvas,
+.terminal__body:not([data-hero-theme="hash"]) .hero__hash {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .hero__canvas {
     opacity: var(--canvas-opacity-narrow);
+  }
+
+  /* The hash cloud is dim by design, so it keeps full strength under a lighter scrim */
+  .hero__content::before {
+    background: radial-gradient(ellipse 60% 55% at 35% 50%, var(--hero-scrim-narrow) 45%, transparent 100%);
   }
 }
 
@@ -158,8 +182,8 @@
   margin-top: var(--space-6);
 }
 
-/* Shown by network.js only when the animation runs */
-.fun-toggle {
+/* Shown by hash.js; switches the hero theme between hash cloud and network */
+.theme-toggle {
   position: relative;
   min-height: 44px;
   margin-top: var(--space-4);
@@ -174,11 +198,11 @@
   transition: color var(--duration-fast) var(--ease-standard);
 }
 
-.fun-toggle::before {
+.theme-toggle::before {
   content: "$ ";
 }
 
-.fun-toggle:hover {
+.theme-toggle:hover {
   color: var(--color-text);
 }
 
@@ -186,6 +210,81 @@
 .terminal__body.is-playing {
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* ==========================================================================
+   #recent
+   ========================================================================== */
+
+/* Up to 6 compact cards: 3 columns on desktop, 2 on tablet, 1 on mobile */
+.recent__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: var(--space-4);
+}
+
+/* Same lifted card as #work, as a compact row: thumb left, text right.
+   The whole card is the link target via .recent__link::after */
+.recent__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  align-items: start;
+  padding: var(--space-4) var(--space-5);
+  background: radial-gradient(closest-side, var(--color-card-glow) 40%, var(--color-card));
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.recent__card:hover,
+.recent__card:focus-within {
+  border-color: var(--color-accent);
+}
+
+.recent__thumb {
+  grid-row: span 2;
+  border-radius: var(--radius-md);
+}
+
+/* Leaves room for the arrow in the top corner */
+.recent__card h3 {
+  margin-bottom: 0;
+  padding-inline-end: 2ch;
+  font-size: var(--fs-base);
+}
+
+.recent__link {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.recent__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+/* Two lines in the card; the full text stays in the HTML for crawlers */
+.recent__card p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}
+
+.recent__cta {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-accent);
 }
 
 /* ==========================================================================

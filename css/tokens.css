@@ -10,6 +10,11 @@
   --color-border: #2a2e36;
   --color-border-soft: #1c1f25; /* faint hairline, decorative only */
   --canvas-opacity-narrow: 0.4; /* hero network behind text on <768px */
+  --hero-scrim: color-mix(in srgb, var(--color-surface) 82%, transparent); /* soft backdrop behind hero text */
+  --hero-scrim-narrow: color-mix(in srgb, var(--color-surface) 55%, transparent); /* same, <768px: text covers the card */
+  --color-hash-ink: #292929;    /* hero hash cloud: resting glyphs (decorative) */
+  --color-hash-hi: #9a9a9a;     /* hero hash cloud: glyphs lit by hover, trail or smoke */
+  --color-hash-glow: #008f11;   /* hero hash cloud: click-wave colour */
 
   /* Primary button — indigo-violet. White text 5.6:1; button vs bg 3.5:1, vs surface 3.2:1 */
   --color-button: #5b50e8;

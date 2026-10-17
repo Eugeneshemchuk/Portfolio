@@ -30,7 +30,7 @@
     funRecovery: 1.2,     // per sec, how fast nodes settle back to drift speed
     funTapTime: 0.2,      // sec, a press shorter than this adds a node instead of bursting
     maxNodes: 120,        // hard cap; adding past it recycles the oldest node
-    calmFadeIn: 900,      // ms, fresh calm network fading in after fun is switched off
+    fadeIn: 900,          // ms, fresh network fading in when the hero theme switches to it
     colorRing: "126, 231, 135", // --color-syntax-green as rgb
 
     // Foreground depth layer: soft, larger particles in front of the network.
@@ -74,9 +74,8 @@
   var cellSize = CONFIG.linkDistance;
 
   var pointer = { x: 0, y: 0, active: false, down: false, released: false, charge: 0 };
-  var fun = false;
+  var fun = false; // on while the network is the shown hero theme (hash.js switches it)
   var rings = [];
-  var toggle = document.querySelector(".fun-toggle");
   var fadeInFrom = 0;
   var lastTime = 0;
   var rafId = null;
@@ -321,7 +320,7 @@
     ctx.clearRect(0, 0, width, height);
     var fade = 1;
     if (fadeInFrom) {
-      fade = Math.min((performance.now() - fadeInFrom) / CONFIG.calmFadeIn, 1);
+      fade = Math.min((performance.now() - fadeInFrom) / CONFIG.fadeIn, 1);
       ctx.globalAlpha = fade;
       if (fade === 1) fadeInFrom = 0;
     }
@@ -424,7 +423,7 @@
   }
 
   function updateRunState() {
-    if (heroVisible && tabVisible) start();
+    if (fun && heroVisible && tabVisible) start();
     else stop();
   }
 
@@ -438,7 +437,7 @@
   }
 
   // Watch the hero itself, not just the window: its height also changes when the
-  // fun toggle is revealed below, and a stale size stretches the canvas.
+  // theme toggle is revealed below, and a stale size stretches the canvas.
   if ("ResizeObserver" in window) new ResizeObserver(onResize).observe(parent);
   else window.addEventListener("resize", onResize);
   document.addEventListener("visibilitychange", function () {
@@ -486,33 +485,24 @@
     parent.classList.remove("is-playing");
   });
 
-  function setFun(on, byUser) {
-    // Switching fun off crumbles the current network; a fresh calm one fades in
-    if (byUser && !on && window.pixelDissolve) {
-      window.pixelDissolve.canvas(canvas);
+  // Called by hash.js when the hero theme switches; a fresh network fades in
+  function setActive(on) {
+    if (on && !fun) {
       initNodes(width, height);
-      fadeInFrom = performance.now();
+      fadeInFrom = reduceMotion ? 0 : performance.now();
     }
-
     fun = on;
-    toggle.textContent = on ? "Turn off fun" : "Turn on fun";
     rings = [];
     pointer.down = pointer.released = false;
     pointer.charge = 0;
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].vx = nodes[i].bvx;
-      nodes[i].vy = nodes[i].bvy;
-      nodes[i].pop = 0;
-    }
-    try { localStorage.setItem("fun", on ? "on" : "off"); } catch (e) {}
+    if (reduceMotion) { if (on) draw(); }
+    else updateRunState();
   }
+  window.heroNetwork = { setActive: setActive };
 
   resize();
 
-  if (reduceMotion) {
-    draw();
-    return;
-  }
+  if (reduceMotion) return;
 
   if ("IntersectionObserver" in window) {
     var observer = new IntersectionObserver(
@@ -523,17 +513,6 @@
       { threshold: 0 }
     );
     observer.observe(canvas.closest("#hero"));
-  }
-
-  if (toggle) {
-    try { fun = localStorage.getItem("fun") !== "off"; } catch (e) {}
-    setFun(fun);
-    toggle.hidden = false;
-    toggle.addEventListener("click", function () {
-      setFun(!fun, true);
-    });
-  } else {
-    fun = false;
   }
 
   updateRunState();

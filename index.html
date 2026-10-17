@@ -189,6 +189,7 @@
         </div>
         <div class="terminal__body">
           <canvas class="hero__canvas" aria-hidden="true"></canvas>
+          <canvas class="hero__hash" aria-hidden="true"></canvas>
           <div class="hero__content">
             <p class="eyebrow eyebrow--typed" style="--type-width:8ch; --type-steps:8;">$ whoami</p>
             <h1 id="hero-heading">Eugene Shemchuk, Agentic AI Engineer</h1>
@@ -198,12 +199,56 @@
             <p class="hero__stack">LLMs, cloud, APIs, Python. Trusted by Netflix, Nike and ABN AMRO.</p>
             <div class="hero__cta">
               <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Schedule 30 min call</a>
-              <a class="button button--secondary" href="fractal/">Fractal Drift</a>
-              <a class="button button--secondary" href="game/">Pixel Voyager</a>
             </div>
-            <button class="fun-toggle" type="button" hidden>Turn off fun</button>
+            <button class="theme-toggle" type="button" hidden>Switch to network</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="recent" aria-labelledby="recent-heading">
+      <div class="container">
+        <p class="eyebrow eyebrow--typed" style="--type-width:25ch; --type-steps:25;">$ ls -t ~/projects | head</p>
+        <h2 id="recent-heading">Recent projects</h2>
+        <!-- Newest first, at most 6 cards: add new ones at the top, drop the oldest past 6 -->
+        <ul class="recent__grid">
+          <li class="recent__card reveal" data-reveal>
+            <img class="recent__thumb" src="assets/img/work/pet-siorbaty-mozhna.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+            <h3><a class="recent__link" href="https://siorbaty-mozhna.com/">Siorbaty Mozhna tea school</a></h3>
+            <p>Website for the Siorbaty Mozhna tea school, in Ukrainian: a recorded four-module course on tea ceremony, tea types, teaware and earning from tea. Self-paced, with a short quiz after each lesson and progress saved in the browser.</p>
+            <span class="recent__cta" aria-hidden="true">↗</span>
+          </li>
+          <li class="recent__card reveal" data-reveal>
+            <img class="recent__thumb" src="assets/img/work/pet-natal.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+            <h3><a class="recent__link" href="https://natal-harmony.pages.dev/">Natal Chart</a></h3>
+            <p>Natal chart tool that casts a birth chart from name, birthplace, date and time in a few short steps, showing planets, elements and the closest aspects.</p>
+            <span class="recent__cta" aria-hidden="true">↗</span>
+          </li>
+          <li class="recent__card reveal" data-reveal>
+            <img class="recent__thumb" src="assets/img/work/pet-wao.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+            <h3><a class="recent__link" href="https://wao-2ic.pages.dev/">WAO — We Are One</a></h3>
+            <p>Scroll-driven web experience for the dvaaya community that slows visitors down: a guided three-breath pause, then a single card with one small act to take into the day.</p>
+            <span class="recent__cta" aria-hidden="true">↗</span>
+          </li>
+          <li class="recent__card reveal" data-reveal>
+            <img class="recent__thumb" src="assets/img/work/pet-clips.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+            <h3><a class="recent__link" href="clips/">Automated captions and video editing</a></h3>
+            <p>Send a video, a voice note or a line of text to a Telegram bot and get back a finished vertical clip with word-by-word captions, voiceover and music. Runs fully on-device: no LLM calls, no per-clip cost.</p>
+            <span class="recent__cta" aria-hidden="true">→</span>
+          </li>
+          <li class="recent__card reveal" data-reveal>
+            <img class="recent__thumb" src="assets/img/work/pet-game.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+            <h3><a class="recent__link" href="game/">Pixel Voyager</a></h3>
+            <p>Tiny 8-bit space shooter drawn on a low-res canvas with no images or libraries. Mine asteroids for crystals, level up your ship, break planets and escape black hole gravity.</p>
+            <span class="recent__cta" aria-hidden="true">→</span>
+          </li>
+          <li class="recent__card reveal" data-reveal>
+            <img class="recent__thumb" src="assets/img/work/pet-fractal.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+            <h3><a class="recent__link" href="fractal/">Fractal Drift</a></h3>
+            <p>Live Mandelbrot zoom rendered with WebGL in the browser, diving up to 240,000× into the set. Click or scroll to steer it, and switch colour styles and warp.</p>
+            <span class="recent__cta" aria-hidden="true">→</span>
+          </li>
+        </ul>
       </div>
     </section>
 
@@ -352,6 +397,13 @@
           <div class="other-work__group reveal" data-reveal>
             <h3>Web experiences</h3>
             <ul class="other-work__list">
+              <li>
+                <img class="other-work__thumb" src="assets/img/work/pet-siorbaty-mozhna.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+                <div>
+                  <a class="other-work__name" href="https://siorbaty-mozhna.com/">Siorbaty Mozhna tea school ↗</a>
+                  <p class="other-work__desc">Website for the Siorbaty Mozhna tea school, in Ukrainian: a recorded four-module course on tea ceremony, tea types, teaware and earning from tea. Self-paced, with a short quiz after each lesson and progress saved in the browser. Includes reference pages on tea types and water for tea.</p>
+                </div>
+              </li>
               <li>
                 <img class="other-work__thumb" src="assets/img/work/pet-natal.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
                 <div>
@@ -599,6 +651,7 @@
 
   <script src="js/nav.js" defer></script>
   <script src="js/network.js" defer></script>
+  <script src="js/hash.js" defer></script>
   <script src="js/egg.js" defer></script>
 </body>
 </html>

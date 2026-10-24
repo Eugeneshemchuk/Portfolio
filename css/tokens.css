@@ -12,6 +12,7 @@
   --canvas-opacity-narrow: 0.4; /* hero network behind text on <768px */
   --hero-scrim: color-mix(in srgb, var(--color-surface) 82%, transparent); /* soft backdrop behind hero text */
   --hero-scrim-narrow: color-mix(in srgb, var(--color-surface) 55%, transparent); /* same, <768px: text covers the card */
+  --color-hash-bg: #0d0a08;    /* hero hash cloud: darker backdrop than --color-surface */
   --color-hash-ink: #2c241f;    /* hero hash cloud: resting glyphs (decorative) */
   --color-hash-hi: #b09a88;     /* hero hash cloud: glyphs lit by hover, trail or smoke */
   --color-hash-glow: #008f11;   /* hero hash cloud: click-wave colour */

@@ -14,14 +14,14 @@
     windSpeed: 1.0,     // cloud drift speed
     smokeSpeed: 1.0,    // speed of the smoke wisps passing over
     hoverRadius: 0.09,  // spotlight size, fraction of hero height
-    trailLife: 1.4,     // sec the hover afterglow takes to fade
+    trailLife: 2.2,     // sec the hover afterglow takes to fade
     waveSpeed: 0.38,    // click-wave growth, hero heights per sec
     waveWidth: 0.11,    // thickness of the wave band, fraction of hero height
     waveLife: 3.2,      // sec before a wave is gone
     fadeIn: 1.5,        // sec, cloud fading in when the theme is shown
     maxDPR: 2
   };
-  var MAX_TAPS = 8, MAX_TRAIL = 32;
+  var MAX_TAPS = 8, MAX_TRAIL = 48;
 
   // Theme switch: hash cloud (default) <-> node network (network.js)
   var LABELS = { hash: "Switch to network", network: "Switch to hash cloud" };
@@ -37,7 +37,6 @@
     active = theme === "hash";
     if (active) shownAt = now();
     updateRunState();
-    try { localStorage.setItem("hero-theme", theme); } catch (e) {}
   }
 
   var gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: true, alpha: true });
@@ -379,9 +378,7 @@
 
   resize();
 
-  var theme = "hash";
-  try { if (localStorage.getItem("hero-theme") === "network" && net) theme = "network"; } catch (e) {}
-  setTheme(theme);
+  setTheme("hash");
 
   if (toggle && net) {
     toggle.hidden = false;

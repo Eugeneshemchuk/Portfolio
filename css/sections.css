@@ -56,6 +56,13 @@
   display: none;
 }
 
+/* Hash cloud sits on a darker backdrop; the scrim follows it */
+.hero__terminal .terminal__body[data-hero-theme="hash"] {
+  --hero-scrim: color-mix(in srgb, var(--color-hash-bg) 82%, transparent);
+  --hero-scrim-narrow: color-mix(in srgb, var(--color-hash-bg) 55%, transparent);
+  background: var(--color-hash-bg);
+}
+
 @media (max-width: 767px) {
   .hero__canvas {
     opacity: var(--canvas-opacity-narrow);

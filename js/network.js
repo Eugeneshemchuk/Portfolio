@@ -17,9 +17,9 @@
     cursorRadius: 150,    // px, influence radius around the pointer
     cursorForce: 0.5,     // px nudge per frame at closest approach
     nodeRadius: 1.6,
-    colorNode: "94, 177, 255",       // --color-accent as rgb
-    colorLine: "94, 177, 255",
-    colorCursorLine: "244, 245, 247", // --color-text, brighter than regular links
+    colorNode: "255, 91, 46",       // --color-accent as rgb
+    colorLine: "255, 91, 46",
+    colorCursorLine: "243, 236, 229", // --color-text, brighter than regular links
 
     // Fun mode: hover attracts, press-and-hold gathers nodes, release bursts them out.
     funRadius: 300,       // px, reach of the pull and the burst
@@ -42,7 +42,7 @@
     fgAlphaMin: 0.1,
     fgAlphaMax: 0.32,
     fgSpeed: 7,           // px/sec drift at z = 1
-    colorParticle: "120, 190, 255",
+    colorParticle: "255, 176, 124",
 
     // Camera: every node and particle sits at a depth. Moving the camera shifts each one by
     // its depth's amount (px at full cursor offset), so near and far slide apart like a real POV move.

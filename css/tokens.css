@@ -1,25 +1,25 @@
 :root {
   /* Colour — dark-first, restrained. Checked against WCAG AA on --color-bg. */
-  --color-bg: #0b0c0f;
-  --color-surface: #15171c;
-  --color-card: #1a1c22;      /* work cards: lifted so dark logos read */
-  --color-card-glow: #1f2229; /* work cards: centre highlight */
-  --color-text: #f4f5f7;
-  --color-text-muted: #9aa0ac;
-  --color-accent: #5eb1ff;
-  --color-border: #2a2e36;
-  --color-border-soft: #1c1f25; /* faint hairline, decorative only */
+  --color-bg: #0c0a09;
+  --color-surface: #1a1411;
+  --color-card: #1f1814;      /* work cards: lifted so dark logos read */
+  --color-card-glow: #271d17; /* work cards: centre highlight */
+  --color-text: #f3ece5;
+  --color-text-muted: #a89d93;
+  --color-accent: #ff5b2e;
+  --color-border: #3a2b22;
+  --color-border-soft: #231a15; /* faint hairline, decorative only */
   --canvas-opacity-narrow: 0.4; /* hero network behind text on <768px */
   --hero-scrim: color-mix(in srgb, var(--color-surface) 82%, transparent); /* soft backdrop behind hero text */
   --hero-scrim-narrow: color-mix(in srgb, var(--color-surface) 55%, transparent); /* same, <768px: text covers the card */
-  --color-hash-ink: #292929;    /* hero hash cloud: resting glyphs (decorative) */
-  --color-hash-hi: #9a9a9a;     /* hero hash cloud: glyphs lit by hover, trail or smoke */
+  --color-hash-ink: #2c241f;    /* hero hash cloud: resting glyphs (decorative) */
+  --color-hash-hi: #b09a88;     /* hero hash cloud: glyphs lit by hover, trail or smoke */
   --color-hash-glow: #008f11;   /* hero hash cloud: click-wave colour */
 
-  /* Primary button — indigo-violet. White text 5.6:1; button vs bg 3.5:1, vs surface 3.2:1 */
-  --color-button: #5b50e8;
-  --color-button-hover: #4a3fd6;
-  --color-on-button: #ffffff;
+  /* Primary button — warm orange. Dark text 6.4:1; button vs bg 6.4:1, vs surface 5.8:1 */
+  --color-button: #ff5b2e;
+  --color-button-hover: #ff7346;
+  --color-on-button: #160904;
 
   /* Syntax-style accents — used sparingly for terminal/editor colour cues. All AA-checked on bg/surface. */
   --color-syntax-green: #7ee787;

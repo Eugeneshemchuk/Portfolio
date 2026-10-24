@@ -31,7 +31,7 @@
     funTapTime: 0.2,      // sec, a press shorter than this adds a node instead of bursting
     maxNodes: 120,        // hard cap; adding past it recycles the oldest node
     fadeIn: 900,          // ms, fresh network fading in when the hero theme switches to it
-    colorRing: "126, 231, 135", // --color-syntax-green as rgb
+    colorRing: "255, 91, 46", // --color-accent as rgb
 
     // Foreground depth layer: soft, larger particles in front of the network.
     // Each gets a depth z (0..1); nearer ones are bigger, brighter, faster and shift more with the cursor.

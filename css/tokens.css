@@ -15,7 +15,7 @@
   --color-hash-bg: #0d0a08;    /* hero hash cloud: darker backdrop than --color-surface */
   --color-hash-ink: #2c241f;    /* hero hash cloud: resting glyphs (decorative) */
   --color-hash-hi: #b09a88;     /* hero hash cloud: glyphs lit by hover, trail or smoke */
-  --color-hash-glow: #008f11;   /* hero hash cloud: click-wave colour */
+  --color-hash-glow: #ff5b2e;   /* hero hash cloud: click-wave colour */
 
   /* Primary button — warm orange. Dark text 6.4:1; button vs bg 6.4:1, vs surface 5.8:1 */
   --color-button: #ff5b2e;

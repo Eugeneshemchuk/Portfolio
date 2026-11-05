@@ -41,7 +41,8 @@
 }
 
 .hero__canvas,
-.hero__hash {
+.hero__hash,
+.hero__gl {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -52,15 +53,29 @@
 /* Text fills the hero on small screens, so the network sits further back */
 /* Hero theme, set by hash.js: only the active animation's canvas is shown */
 .terminal__body:not([data-hero-theme="network"]) .hero__canvas,
-.terminal__body:not([data-hero-theme="hash"]) .hero__hash {
+.terminal__body:not([data-hero-theme="hash"]) .hero__hash,
+.terminal__body:not([data-hero-theme="infinity"]) .hero__gl {
   display: none;
 }
 
 /* Hash cloud sits on a darker backdrop; the scrim follows it */
-.hero__terminal .terminal__body[data-hero-theme="hash"] {
+.hero__terminal .terminal__body[data-hero-theme="hash"],
+.hero__terminal .terminal__body[data-hero-theme="infinity"] {
   --hero-scrim: color-mix(in srgb, var(--color-hash-bg) 82%, transparent);
   --hero-scrim-narrow: color-mix(in srgb, var(--color-hash-bg) 55%, transparent);
   background: var(--color-hash-bg);
+}
+
+/* Infinity theme: the empty hero can be dragged to turn the loop; sideways swipes on touch */
+.terminal__body[data-hero-theme="infinity"] {
+  cursor: grab;
+  touch-action: pan-y;
+}
+.terminal__body[data-hero-theme="infinity"].is-grabbing {
+  cursor: grabbing;
+}
+.terminal__body[data-hero-theme="infinity"] :is(h1, p, .eyebrow) {
+  cursor: auto;
 }
 
 @media (max-width: 767px) {

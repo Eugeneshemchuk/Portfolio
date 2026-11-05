@@ -23,17 +23,23 @@
   };
   var MAX_TAPS = 8, MAX_TRAIL = 48;
 
-  // Theme switch: hash cloud (default) <-> node network (network.js)
-  var LABELS = { hash: "Switch to network", network: "Switch to hash cloud" };
-  var net = window.heroNetwork;
+  // Theme switch, cycling: infinity (default, sculpture.js) -> hash cloud -> node network (network.js)
+  var ORDER = ["infinity", "hash", "network"];
+  var LABELS = { infinity: "Switch to hash cloud", hash: "Switch to network", network: "Switch to infinity" };
+  var net = window.heroNetwork, sculpt = window.heroSculpture, current = null;
+  if (!sculpt) { ORDER = ["hash", "network"]; LABELS.hash = "Switch to network"; }
   function setTheme(theme, byUser) {
-    if (byUser && window.pixelDissolve) {
-      if (theme === "hash" && net) window.pixelDissolve.canvas(document.querySelector(".hero__canvas"));
-      else if (theme === "network" && gl) { render(); window.pixelDissolve.canvas(canvas); }
+    if (byUser && window.pixelDissolve && current) {
+      // crumble the outgoing canvas (WebGL ones re-render first so their buffer is fresh)
+      if (current === "network" && net) window.pixelDissolve.canvas(document.querySelector(".hero__canvas"));
+      else if (current === "hash" && gl) { render(); window.pixelDissolve.canvas(canvas); }
+      else if (current === "infinity" && sculpt) { sculpt.render(); window.pixelDissolve.canvas(document.querySelector(".hero__gl")); }
     }
+    current = theme;
     parent.setAttribute("data-hero-theme", theme);
     if (toggle) toggle.textContent = LABELS[theme];
     if (net) net.setActive(theme === "network");
+    if (sculpt) sculpt.setActive(theme === "infinity");
     active = theme === "hash";
     if (active) shownAt = now();
     updateRunState();
@@ -378,12 +384,24 @@
 
   resize();
 
-  setTheme("hash");
+  setTheme(ORDER[0]);
+
+  // Auto-rotate every 30 s while the hero is on screen; any click or drag in the hero restarts the wait
+  var ROTATE_MS = 30000, rotateTimer = 0;
+  function next() { setTheme(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length], true); }
+  function armRotate() {
+    clearTimeout(rotateTimer);
+    if (reduceMotion || ORDER.length < 2) return;
+    rotateTimer = setTimeout(function () {
+      if (heroVisible && tabVisible) next();
+      armRotate();
+    }, ROTATE_MS);
+  }
+  parent.addEventListener("pointerdown", armRotate);
+  armRotate();
 
   if (toggle && net) {
     toggle.hidden = false;
-    toggle.addEventListener("click", function () {
-      setTheme(active ? "network" : "hash", true);
-    });
+    toggle.addEventListener("click", function () { next(); armRotate(); });
   }
 })();

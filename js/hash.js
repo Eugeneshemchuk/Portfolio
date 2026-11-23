@@ -8,7 +8,7 @@
   // Tune the feel here without reading the logic below.
   var CONFIG = {
     chars: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    fontCssPx: 16,      // glyph size in CSS px
+    fontCssPx: 11,      // glyph size in CSS px
     lineHeight: 1.1,    // cell height = font * lineHeight
     cloudScale: 1.6,    // bigger = smaller cloud features
     windSpeed: 1.0,     // cloud drift speed

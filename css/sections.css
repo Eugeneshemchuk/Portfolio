@@ -108,8 +108,23 @@
   flex-direction: column;
   align-items: center;
   max-width: var(--content-max-width);
-  padding-inline: var(--gutter);
+  padding: var(--space-7) var(--gutter);
   text-align: center;
+  z-index: 1; /* own stacking context, so the panel below sits over the canvas */
+}
+
+/* Dark, blurred panel behind the text; edges fade out so it has no hard box */
+.hero__content::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--space-7)) calc(-1 * var(--space-8));
+  z-index: -1;
+  background: var(--hero-text-backdrop);
+  -webkit-backdrop-filter: blur(var(--hero-text-blur));
+  backdrop-filter: blur(var(--hero-text-blur));
+  -webkit-mask-image: radial-gradient(closest-side, #000 65%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 65%, transparent 100%);
+  pointer-events: none;
 }
 
 .hero__badge {

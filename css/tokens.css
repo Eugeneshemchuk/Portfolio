@@ -1,21 +1,37 @@
 :root {
   /* Colour — dark-first, restrained. Checked against WCAG AA on --color-bg. */
-  --color-bg: #0c0a09;
-  --color-surface: #1a1411;
-  --color-card: #1f1814;      /* work cards: lifted so dark logos read */
-  --color-card-glow: #271d17; /* work cards: centre highlight */
-  --color-text: #f3ece5;
-  --color-text-muted: #a89d93;
+  --color-bg: #050505;
+  --color-surface: #121212;
+  --color-card: #141414;      /* image wells behind logos */
+  --color-card-glow: #1c1c1c; /* image wells: centre highlight */
+  --color-text: #ffffff;
+  --color-text-muted: #a3a3a3; /* 8.1:1 on bg */
   --color-accent: #ff5b2e;
-  --color-border: #3a2b22;
-  --color-border-soft: #231a15; /* faint hairline, decorative only */
+  --color-border: rgba(255, 255, 255, 0.2);
+  --color-border-soft: rgba(255, 255, 255, 0.06); /* faint hairline, decorative only */
   --canvas-opacity-narrow: 0.4; /* hero network behind text on <768px */
   --hero-scrim: color-mix(in srgb, var(--color-surface) 82%, transparent); /* soft backdrop behind hero text */
   --hero-scrim-narrow: color-mix(in srgb, var(--color-surface) 55%, transparent); /* same, <768px: text covers the card */
-  --color-hash-bg: #0d0a08;    /* hero hash cloud: darker backdrop than --color-surface */
+  --color-hash-bg: #050505;    /* hero hash cloud: darker backdrop than --color-surface */
   --color-hash-ink: #2c241f;    /* hero hash cloud: resting glyphs (decorative) */
   --color-hash-hi: #b09a88;     /* hero hash cloud: glyphs lit by hover, trail or smoke */
   --color-hash-glow: #ff5b2e;   /* hero hash cloud: click-wave colour */
+
+  /* Aura look: soft text, a second (blue) accent for gradients and orbs, glass cards */
+  --color-text-soft: #d4d4d4;   /* body copy, 14:1 on bg */
+  --color-text-dim: #8f8f8f;    /* small captions, 6.2:1 on bg */
+  --color-accent-soft: #fb923c; /* gradient start, labels */
+  --color-accent-2: #3b82f6;    /* gradient end, orb, hover hints */
+  --glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  --glass-flat: rgba(255, 255, 255, 0.02);
+  --glass-hover: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.2);
+  --glow-accent: 0 0 20px rgba(255, 91, 46, 0.18);
+  --glow-text: 0 0 30px rgba(255, 91, 46, 0.4);
+  --orb-accent: rgba(234, 88, 12, 0.2);
+  --orb-accent-2: rgba(37, 99, 235, 0.15);
+  --nav-bg: rgba(5, 5, 5, 0.6);
 
   /* Primary button — warm orange. Dark text 6.4:1; button vs bg 6.4:1, vs surface 5.8:1 */
   --color-button: #ff5b2e;
@@ -41,8 +57,8 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   /* Nav links — Sublime Text's default editor fonts (Menlo on Mac, Consolas on Windows) */
   --font-code: Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace;
-  --font-weight-regular: 400;
-  --font-weight-bold: 700;
+  --font-weight-regular: 300; /* light, Aura look */
+  --font-weight-bold: 500;    /* medium, headings and buttons */
 
   /* Type scale — fluid, clamp(min, preferred, max) */
   --fs-sm: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem);
@@ -74,11 +90,20 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
 
   /* Motion */
   --duration-fast: 120ms;
   --duration-base: 180ms;
   --duration-slow: 200ms;
+  --duration-card: 400ms;   /* card lift on hover */
+  --duration-image: 700ms;  /* image zoom on hover */
+  --duration-marquee: 40s;  /* references marquee loop */
+  --duration-float: 6s;     /* hero badge float */
+  --duration-pulse: 2s;     /* hero badge dot */
+  --duration-orb: 10s;      /* background orb drift */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-egg: 450ms; /* easter egg: dot hop + bubble pop */
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -90,7 +115,8 @@
   --duration-kin-sweep: 1100ms;
 
   /* Layout */
-  --content-max-width: 1100px;
+  --content-max-width: 1200px;
+  --tracking-logo: 0.2em;
   --gutter: clamp(1rem, 4vw, 1.5rem);
   --header-height: 64px;
 }

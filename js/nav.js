@@ -52,24 +52,6 @@
     });
   }
 
-  var contactToggle = document.querySelector(".contact__toggle");
-  var contactReveal = document.getElementById("contact-links");
-
-  if (contactToggle && contactReveal) {
-    contactToggle.addEventListener("click", function () {
-      var isOpen = contactReveal.classList.toggle("is-open");
-      contactToggle.setAttribute("aria-expanded", String(isOpen));
-
-      // Opening crumbles the button into pixels and the links take its place
-      if (isOpen && window.pixelDissolve) {
-        var hadFocus = document.activeElement === contactToggle;
-        window.pixelDissolve.element(contactToggle);
-        contactToggle.hidden = true;
-        if (hadFocus) contactReveal.querySelector("a").focus({ preventScroll: true });
-      }
-    });
-  }
-
   // Clicking the email copies it; falls back to the mailto link if copying fails
   var emailLink = document.querySelector('.contact__links a[href^="mailto:"]');
 
@@ -113,6 +95,59 @@
 
     revealTargets.forEach(function (target) {
       revealObserver.observe(target);
+    });
+  }
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Work tabs: show all, client work only, or recent projects only
+  var tabs = document.querySelectorAll(".work__tab");
+  var groups = document.querySelectorAll(".work__group");
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      var filter = tab.getAttribute("data-filter");
+      tabs.forEach(function (t) {
+        t.setAttribute("aria-pressed", String(t === tab));
+      });
+      groups.forEach(function (g) {
+        g.hidden = filter !== "all" && g.getAttribute("data-group") !== filter;
+      });
+    });
+  });
+
+  // References marquee: clone the quotes until one copy is wider than the screen, then loop
+  var marquee = document.querySelector(".marquee");
+
+  if (marquee && !reduceMotion) {
+    var track = marquee.querySelector(".marquee__track");
+    var quotes = Array.prototype.slice.call(track.children);
+    var copies = Math.max(1, Math.ceil(window.innerWidth / (quotes.length * 420)));
+    function addCopy() {
+      quotes.forEach(function (q) {
+        var c = q.cloneNode(true);
+        c.setAttribute("aria-hidden", "true");
+        track.appendChild(c);
+      });
+    }
+    for (var k = 1; k < copies; k++) addCopy();
+    var half = track.children.length;
+    for (var m = 0; m < half / quotes.length; m++) addCopy();
+    marquee.classList.add("is-running");
+  }
+
+  // Capability tiles tilt toward the pointer (mouse only)
+  if (!reduceMotion && window.matchMedia("(pointer: fine)").matches) {
+    document.querySelectorAll("[data-tilt]").forEach(function (tile) {
+      tile.addEventListener("pointermove", function (e) {
+        var r = tile.getBoundingClientRect();
+        var rx = ((e.clientY - r.top) / r.height - 0.5) * -16;
+        var ry = ((e.clientX - r.left) / r.width - 0.5) * 16;
+        tile.style.transform = "perspective(1000px) rotateX(" + rx + "deg) rotateY(" + ry + "deg) scale(1.02)";
+      }, { passive: true });
+      tile.addEventListener("pointerleave", function () {
+        tile.style.transform = "";
+      });
     });
   }
 })();

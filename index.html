@@ -161,6 +161,11 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <div class="orbs" aria-hidden="true">
+    <div class="orb orb--accent"></div>
+    <div class="orb orb--blue"></div>
+  </div>
+
   <header class="site-header">
     <nav class="nav" aria-label="Primary">
       <a class="nav__logo" href="#hero">Eugene Shemchuk</a>
@@ -168,10 +173,12 @@
         Menu
       </button>
       <ul class="nav__menu" id="nav-menu">
-        <li><a href="#expertise">Expertise</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#expertise">What I do</a></li>
         <li><a href="#work">Work</a></li>
+        <li><a href="#references">References</a></li>
         <li><a href="#faq">FAQ</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li class="nav__cta-item"><a class="nav__cta" href="https://calendly.com/shemchuk-eugene/30min">Book a call</a></li>
       </ul>
     </nav>
   </header>
@@ -179,149 +186,111 @@
   <main id="main">
 
     <section id="hero" aria-labelledby="hero-heading">
-      <div class="terminal hero__terminal">
-        <div class="terminal__bar" aria-hidden="true">
-          <span class="terminal__dot"></span>
-          <span class="terminal__dot"></span>
-          <span class="terminal__dot"></span>
-          <span class="terminal__title">eugene@amsterdam:~</span>
-        </div>
-        <div class="terminal__body">
-          <canvas class="hero__canvas" aria-hidden="true"></canvas>
-          <canvas class="hero__hash" aria-hidden="true"></canvas>
-          <canvas class="hero__gl" aria-hidden="true"></canvas>
-          <div class="hero__content">
-            <p class="eyebrow eyebrow--typed" style="--type-width:8ch; --type-steps:8;">$ whoami</p>
-            <h1 id="hero-heading">Eugene Shemchuk, Agentic AI Engineer</h1>
-            <p class="hero__display"><span class="kin"><span style="--i:0">AI</span></span> <span class="kin"><span style="--i:1">has</span></span> <span class="kin"><span class="kin__sweep" style="--i:2">arrived</span></span><span class="kin__dot">.</span></p>
-            <p class="hero__pitch">Add Most Powerful AI to your Business Today</p>
-            <p class="hero__stack">Latest models, obsidian brain, integrated anywhere.</p>
-            <div class="hero__cta">
-              <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Schedule 30 min call</a>
-            </div>
-            <button class="theme-toggle" type="button" hidden>Switch to network</button>
-          </div>
+      <canvas class="hero__hash" aria-hidden="true"></canvas>
+      <div class="hero__scrim" aria-hidden="true"></div>
+      <div class="hero__content">
+        <p class="hero__badge"><span class="hero__pulse" aria-hidden="true"></span>Available for freelance and contract work · Amsterdam</p>
+        <p class="hero__display">AI has arrived.<br><span class="hero__gradient">Add it to your business</span></p>
+        <h1 id="hero-heading" class="hero__title"><span>Eugene Shemchuk</span> <span>Agentic AI Engineer</span> <span>Backend &amp; Platform</span></h1>
+        <div class="hero__cta">
+          <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Schedule 30 min call <span aria-hidden="true">→</span></a>
+          <a class="button button--secondary" href="#work">See work</a>
         </div>
       </div>
     </section>
 
-    <section id="recent" aria-labelledby="recent-heading">
+    <section class="tiles" aria-labelledby="tiles-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:25ch; --type-steps:25;">$ ls -t ~/projects | head</p>
-        <h2 id="recent-heading">Recent projects</h2>
-        <!-- Newest first, at most 6 cards: add new ones at the top, drop the oldest past 6 -->
-        <ul class="recent__grid">
-          <li class="recent__card reveal" data-reveal>
-            <img class="recent__thumb" src="assets/img/work/pet-requinta.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
-            <h3><a class="recent__link" href="https://elvenearth.com/">Elven Earth</a></h3>
-            <p>3D web journey through buying rural land and a ruin in Portugal, from choosing the plot to restoring the house. The first piece of a new service for property selection, legal checks, purchase, planning and restoration.</p>
-            <span class="recent__cta" aria-hidden="true">↗</span>
+        <h2 id="tiles-heading" class="visually-hidden">Capabilities</h2>
+        <ul class="tiles__grid">
+          <li class="tile" data-tilt>
+            <svg class="tile__icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="2.5"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6.5 6.5l3.7 3.7M17.5 6.5l-3.7 3.7M12 14.5V18"/></svg>
+            <h3><a class="tile__link" href="#expertise">Agentic AI systems</a></h3>
+            <p>LLM agents on real APIs and data</p>
           </li>
-          <li class="recent__card reveal" data-reveal>
-            <img class="recent__thumb" src="assets/img/work/pet-ore.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
-            <h3><a class="recent__link" href="https://eugeneshemchuk.github.io/ore/">Knowledge Potential</a></h3>
-            <p>Scroll-driven 3D scene for claude.expert in four looping chapters: digital rain, a dissolving particle mask, a neural brain and an asteroid flyby with a crystal close-up. Sound starts on the first click.</p>
-            <span class="recent__cta" aria-hidden="true">↗</span>
+          <li class="tile tile--blue" data-tilt>
+            <svg class="tile__icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6"/></svg>
+            <h3><a class="tile__link" href="#expertise">Backend &amp; platform</a></h3>
+            <p>AWS, Azure, migrations, APIs</p>
           </li>
-          <li class="recent__card reveal" data-reveal>
-            <img class="recent__thumb" src="assets/img/work/pet-siorbaty-mozhna.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
-            <h3><a class="recent__link" href="https://siorbaty-mozhna.com/">Siorbaty Mozhna tea school</a></h3>
-            <p>Website for the Siorbaty Mozhna tea school, in Ukrainian: a recorded four-module course on tea ceremony, tea types, teaware and earning from tea. Self-paced, with a short quiz after each lesson and progress saved in the browser.</p>
-            <span class="recent__cta" aria-hidden="true">↗</span>
+          <li class="tile" data-tilt>
+            <svg class="tile__icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+            <h3><a class="tile__link" href="#expertise">AI product development</a></h3>
+            <p>Discovery to shipped feature</p>
           </li>
-          <li class="recent__card reveal" data-reveal>
-            <img class="recent__thumb" src="assets/img/work/pet-natal.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
-            <h3><a class="recent__link" href="https://natal-harmony.pages.dev/">Natal Chart</a></h3>
-            <p>Natal chart tool that casts a birth chart from name, birthplace, date and time in a few short steps, showing planets, elements and the closest aspects.</p>
-            <span class="recent__cta" aria-hidden="true">↗</span>
-          </li>
-          <li class="recent__card reveal" data-reveal>
-            <img class="recent__thumb" src="assets/img/work/pet-wao.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
-            <h3><a class="recent__link" href="https://wao-2ic.pages.dev/">WAO — We Are One</a></h3>
-            <p>Scroll-driven web experience for the dvaaya community that slows visitors down: a guided three-breath pause, then a single card with one small act to take into the day.</p>
-            <span class="recent__cta" aria-hidden="true">↗</span>
-          </li>
-          <li class="recent__card reveal" data-reveal>
-            <img class="recent__thumb" src="assets/img/work/pet-clips.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
-            <h3><a class="recent__link" href="clips/">Automated captions and video editing</a></h3>
-            <p>Send a video, a voice note or a line of text to a Telegram bot and get back a finished vertical clip with word-by-word captions, voiceover and music. Runs fully on-device: no LLM calls, no per-clip cost.</p>
-            <span class="recent__cta" aria-hidden="true">→</span>
+          <li class="tile tile--blue" data-tilt>
+            <svg class="tile__icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M6 12s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z"/><circle cx="12" cy="12" r="1.5"/></svg>
+            <h3><a class="tile__link" href="#expertise">Applied ML, NLP &amp; CV</a></h3>
+            <p>Up to 99.9% accuracy in production</p>
           </li>
         </ul>
       </div>
     </section>
 
     <section id="about" aria-labelledby="about-heading">
-      <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:19ch; --type-steps:19;">$ whoami --verbose</p>
-        <h2 id="about-heading">About</h2>
-        <div class="about__content">
-          <picture class="about__photo">
+      <div class="container about__grid">
+        <div>
+          <h2 id="about-heading">LLMs connected to real APIs, data and business processes.</h2>
+          <p class="about__bio">Eugene Shemchuk is a freelance senior backend/platform engineer with 11 years of experience building software and AI systems, including roles at Netflix and ABN AMRO. Based in Amsterdam, he specialises in agentic AI, backend platform engineering, and AI product development.</p>
+          <dl class="about__stats">
+            <div><dt>Years experience</dt><dd>11</dd></div>
+            <div><dt>Yearly savings, ZEO</dt><dd>$1M+</dd></div>
+            <div><dt>CV accuracy, SAI</dt><dd>99.9%</dd></div>
+          </dl>
+          <p class="about__clients">Past clients: Netflix, ABN AMRO, Nike, SportsShoes.com</p>
+        </div>
+        <div class="about__frame">
+          <picture>
             <source
               type="image/avif"
-              srcset="assets/img/eugene-200.avif 200w, assets/img/eugene-400.avif 400w, assets/img/eugene-600.avif 600w"
-              sizes="200px"
+              srcset="assets/img/eugene-400.avif 400w, assets/img/eugene-600.avif 600w"
+              sizes="320px"
             />
             <source
               type="image/webp"
-              srcset="assets/img/eugene-200.webp 200w, assets/img/eugene-400.webp 400w, assets/img/eugene-600.webp 600w"
-              sizes="200px"
+              srcset="assets/img/eugene-400.webp 400w, assets/img/eugene-600.webp 600w"
+              sizes="320px"
             />
             <img
               src="assets/img/eugene-400.jpg"
-              srcset="assets/img/eugene-200.jpg 200w, assets/img/eugene-400.jpg 400w, assets/img/eugene-600.jpg 600w"
-              sizes="200px"
-              width="200"
-              height="200"
+              srcset="assets/img/eugene-400.jpg 400w, assets/img/eugene-600.jpg 600w"
+              sizes="320px"
+              width="320"
+              height="320"
               alt="Portrait of Eugene Shemchuk"
               loading="lazy"
             />
           </picture>
-          <div>
-            <p>Eugene Shemchuk is a freelance senior backend/platform engineer with 11 years of experience building software and AI systems, including roles at Netflix and ABN AMRO. Based in Amsterdam, he specialises in agentic AI, backend platform engineering, and AI product development.</p>
-            <dl class="about__stats">
-              <div><dt>experience</dt><dd>11 years</dd></div>
-              <div><dt>past clients</dt><dd>Netflix, ABN AMRO, Nike, SportsShoes.com</dd></div>
-              <div><dt>based in</dt><dd>Amsterdam, NL</dd></div>
-            </dl>
-          </div>
         </div>
       </div>
     </section>
 
     <section id="expertise" aria-labelledby="expertise-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:19ch; --type-steps:19;">$ cat expertise.md</p>
-        <h2 id="expertise-heading">What I do</h2>
-        <p>Eugene Shemchuk connects LLMs and AI models to real APIs, data, and business processes — turning agentic AI ideas into production systems.</p>
+        <div class="section-head section-head--center">
+          <h2 id="expertise-heading">What I do</h2>
+          <p>Eugene Shemchuk connects LLMs and AI models to real APIs, data, and business processes — turning agentic AI ideas into production systems.</p>
+        </div>
         <div class="expertise__grid">
-          <article class="expertise__card reveal" data-reveal>
-            <div>
-              <h3>Agentic AI systems</h3>
-              <p>Design and build LLM-powered agents and conversational systems that plug into real APIs, data, and business logic — from an employee virtual assistant at a major bank to conversational platforms covering hundreds of topics.</p>
-            </div>
-            <svg class="expertise__icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="2.5"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6.5 6.5l3.7 3.7M17.5 6.5l-3.7 3.7M12 14.5V18"/></svg>
+          <article class="expertise__card">
+            <svg class="expertise__icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="2.5"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6.5 6.5l3.7 3.7M17.5 6.5l-3.7 3.7M12 14.5V18"/></svg>
+            <h3>Agentic AI systems</h3>
+            <p>Design and build LLM-powered agents and conversational systems that plug into real APIs, data, and business logic — from an employee virtual assistant at a major bank to conversational platforms covering hundreds of topics.</p>
           </article>
-          <article class="expertise__card reveal" data-reveal>
-            <div>
-              <h3>Backend &amp; platform engineering</h3>
-              <p>Cloud migrations, API refactors, and platform reliability work across AWS and Azure, built to hold up under production traffic and support further AI capability.</p>
-            </div>
-            <svg class="expertise__icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6"/></svg>
+          <article class="expertise__card expertise__card--blue">
+            <svg class="expertise__icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6"/></svg>
+            <h3>Backend &amp; platform engineering</h3>
+            <p>Cloud migrations, API refactors, and platform reliability work across AWS and Azure, built to hold up under production traffic and support further AI capability.</p>
           </article>
-          <article class="expertise__card reveal" data-reveal>
-            <div>
-              <h3>AI product development</h3>
-              <p>Take AI products from discovery to shipped feature: personas, experimentation, A/B testing, and alignment across engineering, data science, and UX.</p>
-            </div>
-            <svg class="expertise__icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+          <article class="expertise__card">
+            <svg class="expertise__icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+            <h3>AI product development</h3>
+            <p>Take AI products from discovery to shipped feature: personas, experimentation, A/B testing, and alignment across engineering, data science, and UX.</p>
           </article>
-          <article class="expertise__card reveal" data-reveal>
-            <div>
-              <h3>Applied ML, NLP &amp; computer vision</h3>
-              <p>Applied machine learning across computer vision (up to 99.9% accuracy), NLP-based product search, and conversational AI, from data prep through production deployment.</p>
-            </div>
-            <svg class="expertise__icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M6 12s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z"/><circle cx="12" cy="12" r="1.5"/></svg>
+          <article class="expertise__card expertise__card--blue">
+            <svg class="expertise__icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M6 12s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z"/><circle cx="12" cy="12" r="1.5"/></svg>
+            <h3>Applied ML, NLP &amp; computer vision</h3>
+            <p>Applied machine learning across computer vision (up to 99.9% accuracy), NLP-based product search, and conversational AI, from data prep through production deployment.</p>
           </article>
         </div>
       </div>
@@ -329,66 +298,132 @@
 
     <section id="work" aria-labelledby="work-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:11ch; --type-steps:11;">$ ls ~/work</p>
         <div class="work__header">
-          <h2 id="work-heading">Selected work</h2>
+          <div>
+            <h2 id="work-heading">Selected work</h2>
+            <p>Client systems in production, plus recent projects.</p>
+          </div>
+          <div class="work__tabs" role="group" aria-label="Filter work">
+            <button type="button" class="work__tab" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="work__tab" data-filter="client" aria-pressed="false">Client work</button>
+            <button type="button" class="work__tab" data-filter="recent" aria-pressed="false">Recent projects</button>
+          </div>
+        </div>
+
+        <div class="work__group" data-group="client">
+          <h3 class="work__group-title">Client work</h3>
+          <div class="work__grid">
+            <article class="work__card">
+              <div class="work__media"><img class="work__visual" src="assets/img/work/netflix.webp" width="790" height="420" alt="" loading="lazy" decoding="async"></div>
+              <div class="work__content">
+                <p class="work__client">Netflix</p>
+                <h4>Proactive issue-discovery dashboards</h4>
+                <dl class="work__fields">
+                  <div><dt>Problem</dt><dd>Technical issues across a global platform were often caught reactively, after becoming incidents.</dd></div>
+                  <div><dt>Approach</dt><dd>Built dashboards and automation to surface problems early, plus an AI/ML automation MVP to cut repetitive technical work.</dd></div>
+                  <div><dt>Outcome</dt><dd>Faster detection and resolution of cross-platform issues, feeding into org-wide reliability practices.</dd></div>
+                </dl>
+              </div>
+            </article>
+            <article class="work__card">
+              <div class="work__media"><img class="work__visual" src="assets/img/work/abn-amro.webp" width="624" height="416" alt="" loading="lazy" decoding="async"></div>
+              <div class="work__content">
+                <p class="work__client">ABN AMRO</p>
+                <h4>Employee virtual assistant — cloud migration</h4>
+                <dl class="work__fields">
+                  <div><dt>Problem</dt><dd>An employee-facing AI assistant needed to move off AWS onto Azure without breaking service for daily users.</dd></div>
+                  <div><dt>Approach</dt><dd>Led the technical migration and coordinated across engineering, data science, and UX while evolving the assistant's LLM-powered components.</dd></div>
+                  <div><dt>Outcome</dt><dd>Zero-disruption migration, plus new proactive, personalized messaging and refactored backend APIs that unlocked further AI features.</dd></div>
+                </dl>
+                <a class="work__link" href="https://learn.microsoft.com/en-us/power-platform/guidance/case-studies/abn-amro-enhances-ai">Microsoft case study ↗</a>
+              </div>
+            </article>
+            <article class="work__card">
+              <div class="work__media"><img class="work__visual" src="assets/img/work/sai.webp" width="400" height="400" alt="" loading="lazy" decoding="async"></div>
+              <div class="work__content">
+                <p class="work__client">SAI</p>
+                <h4>Retail data platform &amp; computer vision</h4>
+                <dl class="work__fields">
+                  <div><dt>Problem</dt><dd>A retail client needed reusable data services plus AI-powered search and image recognition.</dd></div>
+                  <div><dt>Approach</dt><dd>Built a modular Python REST API platform, NLP-based product search, and a computer-vision pipeline end to end.</dd></div>
+                  <div><dt>Outcome</dt><dd>Image-recognition accuracy up to 99.9%, shipped from data prep through production deployment.</dd></div>
+                </dl>
+              </div>
+            </article>
+            <article class="work__card">
+              <div class="work__media"><img class="work__visual" src="assets/img/work/zeo-alliance.webp" width="400" height="400" alt="" loading="lazy" decoding="async"></div>
+              <div class="work__content">
+                <p class="work__client">ZEO Alliance</p>
+                <h4>Conversational AI system — $1M+ annual savings</h4>
+                <dl class="work__fields">
+                  <div><dt>Problem</dt><dd>A business needed to cut support costs and lift customer satisfaction without adding headcount.</dd></div>
+                  <div><dt>Approach</dt><dd>Built a ChatScript/API.AI conversational system, trained on real conversation data, iterated with A/B testing.</dd></div>
+                  <div><dt>Outcome</dt><dd>Reported to save over $1M annually while increasing customer satisfaction by ~30%.</dd></div>
+                </dl>
+                <a class="work__link" href="https://mackeeper.com/">mackeeper.com ↗</a>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="work__group" id="recent" data-group="recent">
+          <h3 class="work__group-title">Recent projects</h3>
+          <!-- Newest first, at most 6 cards: add new ones at the top, drop the oldest past 6 -->
+          <ul class="recent__grid">
+            <li class="recent__card">
+              <img class="recent__thumb" src="assets/img/work/pet-daria-tekuch.webp" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <div>
+                <h4><a class="recent__link" href="https://dariatekuch.com/">Daria Tekuch <span aria-hidden="true">↗</span></a></h4>
+                <p>Website for the artist Daria Tekuch, in Russian and English: her cosmic portal paintings, a gallery and an archive of 41 works from 2016 to 2024, her sessions and practices, and orders for custom paintings.</p>
+              </div>
+            </li>
+            <li class="recent__card">
+              <img class="recent__thumb" src="assets/img/work/pet-requinta.webp" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <div>
+                <h4><a class="recent__link" href="https://elvenearth.com/">Elven Earth <span aria-hidden="true">↗</span></a></h4>
+                <p>3D web journey through buying rural land and a ruin in Portugal, from choosing the plot to restoring the house. The first piece of a new service for property selection, legal checks, purchase, planning and restoration.</p>
+              </div>
+            </li>
+            <li class="recent__card">
+              <img class="recent__thumb" src="assets/img/work/pet-ore.webp" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <div>
+                <h4><a class="recent__link" href="https://eugeneshemchuk.github.io/ore/">Knowledge Potential <span aria-hidden="true">↗</span></a></h4>
+                <p>Scroll-driven 3D scene for claude.expert in four looping chapters: digital rain, a dissolving particle mask, a neural brain and an asteroid flyby with a crystal close-up. Sound starts on the first click.</p>
+              </div>
+            </li>
+            <li class="recent__card">
+              <img class="recent__thumb" src="assets/img/work/pet-siorbaty-mozhna.webp" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <div>
+                <h4><a class="recent__link" href="https://siorbaty-mozhna.com/">Siorbaty Mozhna tea school <span aria-hidden="true">↗</span></a></h4>
+                <p>Website for the Siorbaty Mozhna tea school, in Ukrainian: a recorded four-module course on tea ceremony, tea types, teaware and earning from tea. Self-paced, with a short quiz after each lesson and progress saved in the browser.</p>
+              </div>
+            </li>
+            <li class="recent__card">
+              <img class="recent__thumb" src="assets/img/work/pet-natal.webp" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <div>
+                <h4><a class="recent__link" href="https://natal-harmony.pages.dev/">Natal Chart <span aria-hidden="true">↗</span></a></h4>
+                <p>Natal chart tool that casts a birth chart from name, birthplace, date and time in a few short steps, showing planets, elements and the closest aspects.</p>
+              </div>
+            </li>
+            <li class="recent__card">
+              <img class="recent__thumb" src="assets/img/work/pet-wao.webp" width="64" height="64" alt="" loading="lazy" decoding="async">
+              <div>
+                <h4><a class="recent__link" href="https://wao-2ic.pages.dev/">WAO — We Are One <span aria-hidden="true">↗</span></a></h4>
+                <p>Scroll-driven web experience for the dvaaya community that slows visitors down: a guided three-breath pause, then a single card with one small act to take into the day.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="work__footer">
           <a class="work__github" href="https://github.com/Eugeneshemchuk">View more on GitHub →</a>
+          <p class="work__cta">Want to build something similar? <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Book a call</a></p>
         </div>
-        <div class="work__grid">
-          <article class="work__card reveal" data-reveal>
-            <img class="work__visual" src="assets/img/work/netflix.webp" width="790" height="420" alt="" loading="lazy" decoding="async">
-            <div class="work__content">
-              <h3><span class="work__client">Netflix</span> Proactive issue-discovery dashboards</h3>
-              <dl class="work__fields">
-                <div><dt>problem</dt><dd>Technical issues across a global platform were often caught reactively, after becoming incidents.</dd></div>
-                <div><dt>approach</dt><dd>Built dashboards and automation to surface problems early, plus an AI/ML automation MVP to cut repetitive technical work.</dd></div>
-                <div><dt>outcome</dt><dd>Faster detection and resolution of cross-platform issues, feeding into org-wide reliability practices.</dd></div>
-              </dl>
-            </div>
-          </article>
-          <article class="work__card reveal" data-reveal>
-            <img class="work__visual" src="assets/img/work/sai.webp" width="400" height="400" alt="" loading="lazy" decoding="async">
-            <div class="work__content">
-              <h3><span class="work__client">SAI</span> Retail data platform &amp; computer vision</h3>
-              <dl class="work__fields">
-                <div><dt>problem</dt><dd>A retail client needed reusable data services plus AI-powered search and image recognition.</dd></div>
-                <div><dt>approach</dt><dd>Built a modular Python REST API platform, NLP-based product search, and a computer-vision pipeline end to end.</dd></div>
-                <div><dt>outcome</dt><dd>Image-recognition accuracy up to 99.9%, shipped from data prep through production deployment.</dd></div>
-              </dl>
-            </div>
-          </article>
-          <article class="work__card reveal" data-reveal>
-            <img class="work__visual" src="assets/img/work/abn-amro.webp" width="624" height="416" alt="" loading="lazy" decoding="async">
-            <div class="work__content">
-              <h3><span class="work__client">ABN AMRO</span> Employee virtual assistant — cloud migration</h3>
-              <dl class="work__fields">
-                <div><dt>problem</dt><dd>An employee-facing AI assistant needed to move off AWS onto Azure without breaking service for daily users.</dd></div>
-                <div><dt>approach</dt><dd>Led the technical migration and coordinated across engineering, data science, and UX while evolving the assistant's LLM-powered components.</dd></div>
-                <div><dt>outcome</dt><dd>Zero-disruption migration, plus new proactive, personalized messaging and refactored backend APIs that unlocked further AI features.</dd></div>
-              </dl>
-              <a class="work__link" href="https://learn.microsoft.com/en-us/power-platform/guidance/case-studies/abn-amro-enhances-ai">Microsoft case study ↗</a>
-            </div>
-          </article>
-          <article class="work__card reveal" data-reveal>
-            <img class="work__visual" src="assets/img/work/zeo-alliance.webp" width="400" height="400" alt="" loading="lazy" decoding="async">
-            <div class="work__content">
-              <h3><span class="work__client">ZEO Alliance</span> Conversational AI system — $1M+ annual savings</h3>
-              <dl class="work__fields">
-                <div><dt>problem</dt><dd>A business needed to cut support costs and lift customer satisfaction without adding headcount.</dd></div>
-                <div><dt>approach</dt><dd>Built a ChatScript/API.AI conversational system, trained on real conversation data, iterated with A/B testing.</dd></div>
-                <div><dt>outcome</dt><dd>Reported to save over $1M annually while increasing customer satisfaction by ~30%.</dd></div>
-              </dl>
-              <a class="work__link" href="https://mackeeper.com/">mackeeper.com ↗</a>
-            </div>
-          </article>
-        </div>
-        <p class="work__cta">Want to build something similar? <a class="button button--primary" href="https://calendly.com/shemchuk-eugene/30min">Book a call</a></p>
       </div>
     </section>
 
     <section id="other-work" aria-labelledby="other-work-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:15ch; --type-steps:15;">$ ls ~/pet-projects</p>
         <h2 id="other-work-heading">Other work</h2>
         <p>Smaller builds by Eugene, outside client work.</p>
         <div class="other-work__groups">
@@ -408,6 +443,13 @@
           <div class="other-work__group reveal" data-reveal>
             <h3>Web experiences</h3>
             <ul class="other-work__list">
+              <li>
+                <img class="other-work__thumb" src="assets/img/work/pet-daria-tekuch.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
+                <div>
+                  <a class="other-work__name" href="https://dariatekuch.com/">Daria Tekuch ↗</a>
+                  <p class="other-work__desc">Website for the artist Daria Tekuch, in Russian and English. It shows her cosmic portal paintings, a gallery of selected works and an archive of 41 works from 2016 to 2024 with technique and status. It also lists her services: channelled painting, online practices, yoga nidra, astrology and one-to-one sessions, with orders for custom paintings.</p>
+                </div>
+              </li>
               <li>
                 <img class="other-work__thumb" src="assets/img/work/pet-requinta.webp" width="48" height="48" alt="" loading="lazy" decoding="async">
                 <div>
@@ -539,25 +581,29 @@
 
     <section id="references" aria-labelledby="references-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:21ch; --type-steps:21;">$ cat references.log</p>
-        <h2 id="references-heading">What people say</h2>
-        <div class="references__list">
-          <blockquote class="testimonial reveal" data-reveal>
+        <div class="section-head section-head--center">
+          <h2 id="references-heading">What people say</h2>
+        </div>
+      </div>
+      <div class="marquee">
+        <div class="marquee__track">
+          <blockquote class="testimonial">
             <p>"One of the most exceptional Data Scientists I have encountered in my 14 years of experience... His endless curiosity, combined with his willingness to take risks, leads me to believe there will be no limit to his growth and achievements."</p>
             <footer>Juan Martin Maglione, Head of Technology and Artificial Intelligence, SAI</footer>
           </blockquote>
-          <blockquote class="testimonial reveal" data-reveal>
+          <blockquote class="testimonial">
             <p>"Eugene has proved himself as a technical and analytical person with a fantastic collaborative spirit and drive."</p>
             <footer>Amin Gholoobi, Technical Escalation Manager, Netflix</footer>
           </blockquote>
         </div>
+      </div>
+      <div class="container">
         <p class="references__note">Additional references from previous employers are available on request.</p>
       </div>
     </section>
 
     <section id="faq" aria-labelledby="faq-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:13ch; --type-steps:13;">$ cat faq.md</p>
         <h2 id="faq-heading">FAQ</h2>
         <button type="button" class="button button--secondary faq__toggle" aria-expanded="false" aria-controls="faq-list">Show FAQ</button>
         <div class="faq__reveal" id="faq-list">
@@ -641,42 +687,38 @@
 
     <section id="contact" aria-labelledby="contact-heading">
       <div class="container">
-        <p class="eyebrow eyebrow--typed" style="--type-width:17ch; --type-steps:17;">$ contact --init</p>
         <h2 id="contact-heading">Let's talk</h2>
-        <p>Available for freelance and contract work. Get in touch to talk about your next AI or agentic system — or book a call directly.</p>
-        <button type="button" class="button button--primary contact__toggle" aria-expanded="false" aria-controls="contact-links">Let's talk</button>
-        <div class="contact__reveal" id="contact-links">
-          <ul class="contact__links">
-            <li>
-              <span class="contact__label">email</span>
-              <a href="mailto:shemchuk&#46;eugene&#64;gmail&#46;com">shemchuk&#46;eugene&#64;gmail&#46;com</a>
-            </li>
-            <li>
-              <span class="contact__label">linkedin</span>
-              <a href="https://www.linkedin.com/in/eugene-shemchuk-2b9158165/">linkedin.com/in/eugene-shemchuk</a>
-            </li>
-            <li>
-              <span class="contact__label">github</span>
-              <a href="https://github.com/Eugeneshemchuk">github.com/Eugeneshemchuk</a>
-            </li>
-            <li>
-              <span class="contact__label">book a call</span>
-              <a href="https://calendly.com/shemchuk-eugene/30min">calendly.com/shemchuk-eugene</a>
-            </li>
-          </ul>
-        </div>
+        <p class="contact__lede">Available for freelance and contract work. Get in touch to talk about your next AI or agentic system — or book a call directly.</p>
+        <a class="button button--light contact__cta" href="https://calendly.com/shemchuk-eugene/30min">Schedule 30 min call <span aria-hidden="true">→</span></a>
+        <ul class="contact__links">
+          <li>
+            <a href="mailto:shemchuk&#46;eugene&#64;gmail&#46;com">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg>
+              shemchuk&#46;eugene&#64;gmail&#46;com
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/eugene-shemchuk-2b9158165/">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+              LinkedIn
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/Eugeneshemchuk">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+              GitHub
+            </a>
+          </li>
+        </ul>
       </div>
     </section>
-
   </main>
 
   <footer class="site-footer">
-    <p>&copy; 2026 Eugene Shemchuk</p>
+    <p class="site-footer__name">Eugene Shemchuk</p>
+    <p>Agentic AI Engineer · Amsterdam · &copy; 2026</p>
   </footer>
-
   <script src="js/nav.js" defer></script>
-  <script src="js/network.js" defer></script>
-  <script src="js/sculpture.js" defer></script>
   <script src="js/hash.js" defer></script>
   <script src="js/egg.js" defer></script>
 </body>

@@ -8,8 +8,8 @@
   // Tune the feel here without reading the logic below.
   var CONFIG = {
     chars: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    fontCssPx: 11,      // glyph size in CSS px
-    lineHeight: 1.45,   // cell height = font * lineHeight
+    fontCssPx: 16,      // glyph size in CSS px
+    lineHeight: 1.1,    // cell height = font * lineHeight
     cloudScale: 1.6,    // bigger = smaller cloud features
     windSpeed: 1.0,     // cloud drift speed
     smokeSpeed: 1.0,    // speed of the smoke wisps passing over
@@ -23,11 +23,11 @@
   };
   var MAX_TAPS = 8, MAX_TRAIL = 48;
 
-  // Theme switch, cycling: infinity (default, sculpture.js) -> hash cloud -> node network (network.js)
-  var ORDER = ["infinity", "hash", "network"];
+  // Theme switch: the hero now shows only the hash cloud. Add "infinity" (sculpture.js) or
+  // "network" (network.js) here, and load their scripts, to bring back the 30 s rotation.
+  var ORDER = ["hash"];
   var LABELS = { infinity: "Switch to hash cloud", hash: "Switch to network", network: "Switch to infinity" };
   var net = window.heroNetwork, sculpt = window.heroSculpture, current = null;
-  if (!sculpt) { ORDER = ["hash", "network"]; LABELS.hash = "Switch to network"; }
   function setTheme(theme, byUser) {
     if (byUser && window.pixelDissolve && current) {
       // crumble the outgoing canvas (WebGL ones re-render first so their buffer is fresh)

@@ -163,7 +163,7 @@
     ctx.fillStyle = token("--color-surface");
     ctx.fill();
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = token("--color-syntax-pink");
+    ctx.strokeStyle = token("--color-accent");
     ctx.stroke();
     ctx.font = font;
     ctx.textBaseline = "middle";

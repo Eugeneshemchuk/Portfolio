@@ -55,7 +55,7 @@ ol[class] {
 body {
   min-height: 100vh;
   background: var(--color-bg);
-  color: var(--color-text);
+  color: var(--color-text-soft);
   font-family: var(--font-sans);
   font-weight: var(--font-weight-regular);
   font-size: var(--fs-base);
@@ -64,9 +64,12 @@ body {
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
+  color: var(--color-text);
   line-height: var(--line-height-tight);
   font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
 }
 
 h1 {
@@ -74,12 +77,12 @@ h1 {
 }
 
 h2 {
-  font-size: var(--fs-2xl);
-  margin-bottom: var(--space-5);
+  font-size: var(--fs-xl);
+  margin-bottom: var(--space-4);
 }
 
 h3 {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
 }
 
 p {
@@ -133,6 +136,7 @@ summary:focus-visible {
 }
 
 main section {
+  position: relative;
   padding-block: var(--space-9);
 }
 
@@ -141,8 +145,10 @@ main section {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-surface);
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
 .nav {
@@ -158,9 +164,20 @@ main section {
 }
 
 .nav__logo {
-  font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-sm);
+  font-weight: var(--font-weight-regular);
+  letter-spacing: var(--tracking-logo);
+  text-transform: uppercase;
   text-decoration: none;
   color: var(--color-text);
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.nav__logo:hover {
+  color: var(--color-accent-soft);
 }
 
 .nav__toggle {
@@ -170,34 +187,25 @@ main section {
   min-height: 44px;
   min-width: 44px;
   background: none;
-  border: 1px solid var(--color-text-muted);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
   color: var(--color-text);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
 }
 
 .nav__menu {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-5);
+  align-items: center;
+  gap: var(--space-6);
 }
-
-/* Each link lights up in its own editor syntax colour on hover/active, in menu order */
-.nav__menu li:nth-child(1) { --link-color: var(--color-accent); }
-.nav__menu li:nth-child(2) { --link-color: var(--color-syntax-green); }
-.nav__menu li:nth-child(3) { --link-color: var(--color-syntax-pink); }
-.nav__menu li:nth-child(4) { --link-color: var(--color-syntax-amber); }
-.nav__menu li:nth-child(5) { --link-color: var(--color-syntax-purple); }
-.nav__menu li:nth-child(6) { --link-color: var(--color-syntax-cyan); }
-.nav__menu li:nth-child(7) { --link-color: var(--color-syntax-orange); }
 
 .nav__menu a {
   display: inline-block;
   padding-block: var(--space-3);
-  color: var(--color-text);
-  font-family: var(--font-code);
+  color: var(--color-text-muted);
   font-size: var(--fs-sm);
-  text-decoration: underline 2px transparent;
+  text-decoration: underline 1px transparent;
   text-underline-offset: 6px;
   transition: color var(--duration-fast) var(--ease-standard),
     text-decoration-color var(--duration-fast) var(--ease-standard);
@@ -205,8 +213,28 @@ main section {
 
 .nav__menu a:hover,
 .nav__menu a.is-active {
-  color: var(--link-color);
-  text-decoration-color: currentColor;
+  color: var(--color-text);
+}
+
+.nav__menu a.is-active {
+  text-decoration-color: var(--color-accent);
+}
+
+.nav__menu .nav__cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.nav__menu .nav__cta:hover {
+  background: var(--glass-hover);
 }
 
 @media (max-width: 900px) {
@@ -224,7 +252,11 @@ main section {
     gap: var(--space-4);
     padding: var(--space-4) var(--gutter);
     background: var(--color-bg);
-    border-bottom: 1px solid var(--color-surface);
+    border-bottom: 1px solid var(--color-border-soft);
+  }
+
+  html.js .nav__menu .nav__cta {
+    align-self: flex-start;
   }
 
   html.js .nav__menu.is-open {
@@ -234,7 +266,7 @@ main section {
 
 /* Footer */
 .site-footer {
-  border-top: 1px solid var(--color-surface);
+  border-top: 1px solid var(--color-border-soft);
   padding: var(--space-6) var(--gutter);
   text-align: center;
   color: var(--color-text-muted);
@@ -250,33 +282,52 @@ main section {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2);
   min-height: 44px;
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
   text-decoration: none;
   font-weight: var(--font-weight-bold);
+  cursor: pointer;
   transition: background var(--duration-fast) var(--ease-standard),
     color var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard);
+    border-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard);
 }
 
+/* Glass pill with an orange rim and glow */
 .button--primary {
-  background: var(--color-button);
-  color: var(--color-on-button);
+  background: var(--glass-flat);
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  box-shadow: var(--glow-accent);
 }
 
 .button--primary:hover {
-  background: var(--color-button-hover);
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
 .button--secondary {
-  background: transparent;
+  background: var(--glass-flat);
   color: var(--color-text);
-  border: 1px solid var(--color-text-muted);
+  border-color: var(--color-border);
 }
 
 .button--secondary:hover {
-  border-color: var(--color-text);
+  background: var(--glass-hover);
+}
+
+/* Solid white pill, used once for the final call to action */
+.button--light {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.button--light:hover {
+  transform: scale(1.04);
 }
 
 /* Terminal window chrome — reused across hero + work cards */
